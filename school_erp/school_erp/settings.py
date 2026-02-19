@@ -25,7 +25,11 @@ SECRET_KEY = 'django-insecure-o3+o(shh9nrn+u1(lk2+#7^6-mw%cng3-bxg5#7kbqte^7-+f@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "erp.webadmin.smartbus360.com",
+    "127.0.0.1",
+    "localhost"
+]
 
 
 # Application definition
