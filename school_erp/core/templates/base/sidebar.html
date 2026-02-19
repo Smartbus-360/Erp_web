@@ -1,0 +1,939 @@
+<!-- <aside class="w-64 bg-white border-r hidden md:block overflow-y-auto"> -->
+<div x-data="{ sidebarOpen: false }" class="relative">
+
+    <!-- <aside
+    x-data="{ openMenu: null }"
+    class="w-64 bg-white border-r hidden md:block overflow-y-auto"> -->
+
+    <div
+    x-show="sidebarOpen"
+    @click="sidebarOpen = false"
+    class="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden"
+    x-transition>
+</div>
+<!-- Mobile Top Bar -->
+<div class="md:hidden flex items-center justify-between p-4 bg-white border-b">
+    <span class="font-bold text-blue-600">SmartBus</span>
+
+    <!-- <button @click="sidebarOpen = true">
+        <i class="ri-arrow-right-s-line text-2xl"></i>
+    </button> -->
+</div>
+
+    <aside
+    x-data="{ openMenu: null }"
+    :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+    class="
+        fixed md:static
+        inset-y-0 left-0
+        z-50
+        w-64
+        bg-white
+        border-r
+        overflow-y-auto
+        transform
+        transition-transform
+        duration-300
+        md:translate-x-0
+        md:block
+    ">
+
+
+    <!-- Logo -->
+    <div class="p-4 text-xl font-bold text-blue-600">
+        SmartBus
+    </div>
+
+    <div class="text-xs text-gray-400 px-4 mb-2 uppercase">
+        Menu
+    </div>
+
+    <nav class="space-y-1 text-sm">
+
+        <!-- Dashboard -->
+<a href="{% url 'core:login' %}" class="flex items-center px-4 py-2 text-blue-600 bg-blue-50 rounded">
+            <!-- <i class="ri-dashboard-line mr-3"></i> -->
+            Dashboard
+        </a>
+
+        <!-- Menu Items (STATIC – SAFE) -->
+
+        <!-- <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100">
+            <div class="flex items-center">
+                <i class="ri-settings-3-line mr-3"></i> General Settings
+            </div>
+            <i class="ri-add-line"></i>
+        </div> -->
+        <!-- General Settings -->
+<div class="space-y-1">
+
+    <button
+        type="button"
+        @click="openMenu === 'general' ? openMenu = null : openMenu = 'general'"
+        class="w-full flex items-center justify-between px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+
+        <div class="flex items-center">
+            <i class="ri-settings-3-line mr-3"></i>
+            <span>General Settings</span>
+        </div>
+
+        <i class="ri-arrow-down-s-line transition-transform duration-200"
+           :class="{ 'rotate-180': openMenu === 'general' }"></i>
+    </button>
+
+    <div
+        x-show="openMenu === 'general'"
+        x-transition
+        x-cloak
+        class="ml-8 space-y-1 text-sm">
+
+        <a href="{% url 'core:institute_profile' %}" class="block px-2 py-1 text-gray-500 hover:text-blue-600">Institute Profile</a>
+        <a href="{% url 'core:fee_particulars' %}" class="block px-2 py-1 text-gray-500 hover:text-blue-600">Fee Particulars</a>
+        <!-- <a href="#" class="block px-2 py-1 text-gray-500 hover:text-blue-600">Fee Structure</a> -->
+        <!-- <a href="#" class="block px-2 py-1 text-gray-500 hover:text-blue-600">Discount Type</a> -->
+        <!-- <a href="{% url 'core:accounts_invoice' %}" class="block px-2 py-1 text-gray-500 hover:text-blue-600">Accounts For Fees Invoice</a> -->
+        <!-- <a href="{% url 'core:rules_regulations' %}" class="block px-2 py-1 text-gray-500 hover:text-blue-600">Rules & Regulations</a> -->
+        <!-- <a href="{% url 'core:marks_grading' %}" class="block px-2 py-1 text-gray-500 hover:text-blue-600">Marks & Grading</a> -->
+        <!-- <a href="{% url 'core:account_settings' %}" class="block px-2 py-1 text-gray-500 hover:text-blue-600">Account Settings</a> -->
+
+<a href="#"
+   onclick="
+     localStorage.removeItem('access_token');
+     window.location.href='/login';
+   "
+   class="block px-2 py-1 text-red-500 hover:text-red-600">
+   Logout
+</a>
+
+    </div>
+
+</div>
+
+
+        <!-- <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100">
+            <div class="flex items-center">
+                <i class="ri-building-line mr-3"></i> Classes
+            </div>
+            <i class="ri-add-line"></i>
+        </div> -->
+
+        <!-- Classes -->
+<div x-data="{ openClasses: false }" class="space-y-1">
+
+    <!-- Parent -->
+    <button
+        @click="openClasses = !openClasses"
+        class="w-full flex items-center justify-between px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+
+        <div class="flex items-center">
+            <i class="ri-school-line mr-3"></i>
+            <span>Classes</span>
+        </div>
+
+        <i class="ri-arrow-down-s-line transition-transform"
+           :class="{ 'rotate-180': openClasses }"></i>
+    </button>
+
+    <!-- Submenu -->
+    <div x-show="openClasses"
+         x-transition
+         class="ml-8 space-y-1 text-sm">
+
+        <!-- All Classes -->
+        <a href="{% url 'core:all_classes' %}"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            All Classes
+        </a>
+
+        <!-- New Class -->
+        <a href="{% url 'core:new_class' %}"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            New Class
+        </a>
+
+    </div>
+</div>
+
+
+        <!-- <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100">
+            <div class="flex items-center">
+                <i class="ri-book-2-line mr-3"></i> Subjects
+            </div>
+            <i class="ri-add-line"></i>
+        </div> -->
+
+        <!-- Subjects -->
+<div x-data="{ open: false }" class="space-y-1">
+
+    <!-- Parent -->
+    <button
+        @click="open = !open"
+        class="w-full flex items-center justify-between px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+
+        <div class="flex items-center">
+            <i class="ri-book-2-line mr-3"></i>
+            <span>Subjects</span>
+        </div>
+
+        <i class="ri-arrow-down-s-line transition-transform"
+           :class="{ 'rotate-180': open }"></i>
+    </button>
+
+    <!-- Submenu -->
+    <div x-show="open" x-transition x-cloak class="ml-8 space-y-1 text-sm">
+
+        <a href="{% url 'core:classes_with_subjects' %}"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Classes with Subjects
+        </a>
+
+        <a href="{% url 'core:assign_subjects' %}"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Assign Subjects
+        </a>
+
+    </div>
+</div>
+
+
+        <!-- <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100">
+            <div class="flex items-center">
+                <i class="ri-user-3-line mr-3"></i> Students
+            </div>
+            <i class="ri-add-line"></i>
+        </div> -->
+
+        <!-- Students -->
+<div x-data="{ open: false }" class="space-y-1">
+
+    <!-- Parent -->
+    <button
+        @click="open = !open"
+        class="w-full flex items-center justify-between px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+
+        <div class="flex items-center">
+            <i class="ri-user-3-line mr-3"></i>
+            <span>Students</span>
+        </div>
+
+        <i class="ri-arrow-down-s-line transition-transform"
+           :class="{ 'rotate-180': open }"></i>
+    </button>
+
+    <!-- Submenu -->
+    <div x-show="open" x-transition class="ml-8 space-y-1 text-sm">
+
+        <a href="{% url 'core:all_students' %}"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            All Students
+        </a>
+
+        <a href="{% url 'core:add_student' %}"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Add New
+        </a>
+
+        <!-- <a href="#"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Active / Inactive
+        </a> -->
+
+<a href="{% url 'core:admission_letter' %}"
+   class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+    Admission Letter
+</a>
+
+        <!-- <a href="{% url 'core:print_admission_letter' 1 %}" target="_blank">
+    <button class="btn btn-primary">
+        Print Admission Letter
+    </button>
+</a> -->
+
+
+        <a href="{% url 'core:student_id_cards' %}"
+   class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+    Student ID Cards
+</a>
+
+
+       <a href="{% url 'core:print_basic_list' %}"
+   class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+    Print Basic List
+</a>
+
+
+       <a href="{% url 'core:manage_login' %}"
+   class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+    Manage Login
+</a>
+
+
+       <a href="{% url 'core:promote_students' %}"
+   class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+    Promote Students
+</a>
+
+<a href="{% url 'core:promotion_history' %}"
+   class="block px-4 py-2 text-sm hover:bg-indigo-50 rounded">
+    Promotion History
+</a>
+
+
+    </div>
+</div>
+
+
+        <!-- <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100">
+            <div class="flex items-center">
+                <i class="ri-team-line mr-3"></i> Employees
+            </div>
+            <i class="ri-add-line"></i>
+        </div> -->
+
+        <!-- Employees -->
+<div x-data="{ openEmployees: false }" class="space-y-1">
+
+    <!-- Parent -->
+    <button
+        @click="openEmployees = !openEmployees"
+        class="w-full flex items-center justify-between px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+
+        <div class="flex items-center">
+            <i class="ri-team-line mr-3"></i>
+            <span>Employees</span>
+        </div>
+
+        <i class="ri-arrow-down-s-line transition-transform"
+           :class="{ 'rotate-180': openEmployees }"></i>
+    </button>
+
+    <!-- Submenu -->
+    <div x-show="openEmployees"
+         x-transition
+         class="ml-8 space-y-1 text-sm">
+
+        <a href="{% url 'core:all_employees' %}"
+   class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+    All Employees
+</a>
+
+
+       <a href="{% url 'core:add_employee' %}"
+   class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+    Add New
+</a>
+
+
+        <a href="#"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Staff ID Cards
+        </a>
+
+       <!-- <a href="{% url 'core:job_letter' %}"
+   class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+    Job Letter
+</a> -->
+
+
+        <a href="{% url 'core:employee_manage_login' %}"
+   class="block px-2 py-1 
+   {% if request.path == '/employees/manage-login/' %}
+       text-blue-600 font-semibold
+   {% else %}
+       text-gray-500 hover:text-blue-600
+   {% endif %}">
+    Manage Login
+</a>
+
+
+    </div>
+</div>
+
+
+        <!-- <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100">
+            <div class="flex items-center">
+                <i class="ri-bank-line mr-3"></i> Accounts
+            </div>
+            <i class="ri-add-line"></i>
+        </div> -->
+
+        <!-- Accounts -->
+<!-- <div x-data="{ openAccounts: false }" class="space-y-1"> -->
+
+    <!-- Parent -->
+    <!-- <button
+        @click="openAccounts = !openAccounts"
+        class="w-full flex items-center justify-between px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+
+        <div class="flex items-center">
+            <i class="ri-bank-line mr-3"></i>
+            <span>Accounts</span>
+        </div>
+
+        <i class="ri-arrow-down-s-line transition-transform"
+           :class="{ 'rotate-180': openAccounts }"></i>
+    </button> -->
+
+    <!-- Submenu -->
+    <!-- <div x-show="openAccounts"
+         x-transition
+         x-cloak
+         class="ml-8 space-y-1 text-sm">
+
+        <a href="{% url 'core:chart_of_accounts' %}"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Charts Of Accounts
+        </a>
+
+        <a href="{% url 'core:add_income' %}"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Add Income
+        </a>
+
+        <a href="{% url 'core:add_expense' %}"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Add Expense
+        </a>
+
+        <a href="{% url 'core:account_statement' %}"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Account Statement
+        </a>
+
+    </div>
+
+
+        <!-- <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100">
+            <div class="flex items-center">
+                <i class="ri-money-rupee-circle-line mr-3"></i> Fees
+            </div>
+            <i class="ri-add-line"></i>
+        </div> -->
+    
+        <!-- Fees -->
+<div x-data="{ openFees: false }" class="space-y-1">
+
+    <!-- Parent -->
+    <button
+        @click="openFees = !openFees"
+        class="w-full flex items-center justify-between px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+
+        <div class="flex items-center">
+            <i class="ri-money-rupee-circle-line mr-3"></i>
+            <span>Fees</span>
+        </div>
+
+        <i class="ri-arrow-down-s-line transition-transform"
+           :class="{ 'rotate-180': openFees }"></i>
+    </button>
+
+    <!-- Submenu -->
+    <div x-show="openFees"
+         x-transition
+         x-cloak
+         class="ml-8 space-y-1 text-sm">
+
+        <a href="{% url 'core:generate_fees' %}"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Generate Fees Invoice
+        </a>
+
+        <a href="{% url 'core:collect_fees' %}"
+   class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+    Collect Fees
+</a>
+
+
+    <a href="{% url 'core:fees_paid_slip' %}"
+       class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+
+        <span>Fees Paid Slip</span>
+    </a>
+
+
+        <a href="{% url 'core:fees_defaulters' %}"
+   class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+    Fees Defaulters
+</a>
+<a href="{% url 'core:fee_fine_settings' %}"
+   class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+    Late Fee Settings
+</a>
+
+
+        <!-- <a href="#"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Fees Report
+        </a>
+
+        <a href="#"
+           class="block px-2 py-1 text-red-500 hover:text-red-600">
+            Delete Fees
+        </a>  -->
+
+    </div>
+</div>
+
+
+        <!-- <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100">
+            <div class="flex items-center">
+                <i class="ri-wallet-3-line mr-3"></i> Salary
+            </div>
+            <i class="ri-add-line"></i>
+        </div> -->
+
+        <!-- Salary -->
+<div x-data="{ openSalary: false }" class="space-y-1">
+
+    <!-- Parent -->
+    <button
+        @click="openSalary = !openSalary"
+        class="w-full flex items-center justify-between px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+
+        <div class="flex items-center">
+            <i class="ri-wallet-3-line mr-3"></i>
+            <span>Salary</span>
+        </div>
+
+        <i class="ri-arrow-down-s-line transition-transform"
+           :class="{ 'rotate-180': openSalary }"></i>
+    </button>
+
+    <!-- Submenu -->
+    <div x-show="openSalary"
+         x-transition
+         x-cloak
+         class="ml-8 space-y-1 text-sm">
+
+        <a href="{% url 'core:pay_salary' %}"
+   class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+    Pay Salary
+</a>
+
+
+       <a href="{% url 'core:salary_paid_slip' %}"
+   class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+    Salary Paid Slip
+</a>
+
+        <!-- <a href="#"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Salary Sheet
+        </a>
+
+        <a href="#"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Salary Report
+        </a> -->
+
+    </div>
+</div>
+
+
+        <!-- <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100">
+            <div class="flex items-center">
+                <i class="ri-calendar-check-line mr-3"></i> Attendance
+            </div>
+            <i class="ri-add-line"></i>
+        </div> -->
+
+        <!-- Attendance -->
+<div x-data="{ openAttendance: false }" class="space-y-1">
+
+    <!-- Parent -->
+    <button
+        @click="openAttendance = !openAttendance"
+        class="w-full flex items-center justify-between px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+
+        <div class="flex items-center">
+            <i class="ri-calendar-check-line mr-3"></i>
+            <span>Attendance</span>
+        </div>
+
+        <i class="ri-arrow-down-s-line transition-transform"
+           :class="{ 'rotate-180': openAttendance }"></i>
+    </button>
+
+    <!-- Submenu -->
+    <div x-show="openAttendance"
+         x-transition
+         x-cloak
+         class="ml-8 space-y-1 text-sm">
+
+        <a href="{% url 'core:students_attendance' %}"
+   class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+    Students Attendance
+</a>
+
+
+        <a href="{% url 'core:employees_attendance' %}"
+   class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+    Employees Attendance
+</a>
+
+
+       <a href="{% url 'core:class_wise_report' %}"
+   class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+    Class wise Report
+</a>
+
+
+    <a href="{% url 'core:students_attendance_report' %}"
+   class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+    Students Attendance Report
+</a>
+
+
+        <a href="{% url 'core:employees_attendance_report' %}"
+   class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+    Employees Attendance Report
+</a>
+
+
+    </div>
+</div>
+
+
+        <!-- <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100">
+            <div class="flex items-center">
+                <i class="ri-time-line mr-3"></i> Timetable
+            </div>
+            <i class="ri-add-line"></i>
+        </div> -->
+
+        <!-- Timetable -->
+<div x-data="{ openTimetable: false }" class="space-y-1">
+
+    <!-- Parent -->
+    <button
+        @click="openTimetable = !openTimetable"
+        class="w-full flex items-center justify-between px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+
+        <div class="flex items-center">
+            <i class="ri-time-line mr-3"></i>
+            <span>Timetable</span>
+        </div>
+
+        <i class="ri-arrow-down-s-line transition-transform"
+           :class="{ 'rotate-180': openTimetable }"></i>
+    </button>
+
+    <!-- Submenu -->
+    <div x-show="openTimetable"
+         x-transition
+         x-cloak
+         class="ml-8 space-y-1 text-sm">
+
+        <a href="{% url 'core:timetable_weekdays' %}"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Weekdays
+        </a>
+
+        <a href="{% url 'core:timetable_periods' %}"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Time Periods
+        </a>
+
+        <!-- <a href="#"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Class Rooms
+        </a> -->
+
+        <a href="{% url 'core:timetable_class' %}"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Class Timetable
+        </a>
+
+        <a href="#"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Generate For Class
+        </a>
+
+        <a href="{% url 'core:timetable_teacher' %}"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Generate For Teacher
+        </a>
+
+    </div>
+</div>
+
+
+        <!-- <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100">
+            <div class="flex items-center">
+                <i class="ri-pencil-line mr-3"></i> Homework
+            </div>
+            <i class="ri-add-line"></i>
+        </div> -->
+
+        <a href="{% url 'core:homework_list' %}"
+   class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+    <i class="ri-pencil-line mr-3"></i>
+    Homework
+</a>
+
+
+        <!-- <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100">
+            <div class="flex items-center">
+                <i class="ri-file-list-3-line mr-3"></i> Behaviour & Skills
+            </div>
+            <i class="ri-add-line"></i>
+        </div> -->
+
+        <!-- Behaviour & Skills -->
+<!-- <div x-data="{ openBehaviour: false }" class="space-y-1">
+
+    Parent -->
+    <!-- <button
+        @click="openBehaviour = !openBehaviour"
+        class="w-full flex items-center justify-between px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+
+        <div class="flex items-center">
+            <i class="ri-file-list-3-line mr-3"></i>
+            <span>Behaviour & Skills</span>
+        </div>
+
+        <i class="ri-arrow-down-s-line transition-transform"
+           :class="{ 'rotate-180': openBehaviour }"></i>
+    </button>
+
+  Submenu -->
+    <!-- <div x-show="openBehaviour"
+         x-transition
+         x-cloak
+         class="ml-8 space-y-1 text-sm">
+
+        <a href="#"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Rate Behaviours
+        </a>
+
+        <a href="#"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Rate Skills
+        </a> --> 
+
+        <!-- <a href="#"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Effective Domain Rating Report
+        </a> -->
+
+    <!-- </div>
+</div> --> 
+
+
+        <!-- <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100">
+            <div class="flex items-center">
+                <i class="ri-file-list-3-line mr-3"></i> Whatsapp
+            </div>
+            <i class="ri-add-line"></i>
+        </div> -->
+
+<!-- Messaging -->
+<div x-data="{ openMessaging: false }" class="space-y-1">
+
+    <!-- Parent -->
+    <button
+        @click="openMessaging = !openMessaging"
+        class="w-full flex items-center justify-between px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+
+        <div class="flex items-center">
+            <i class="ri-message-2-line mr-3"></i>
+            <span>Messaging</span>
+        </div>
+
+        <i class="ri-arrow-down-s-line transition-transform"
+           :class="{ 'rotate-180': openMessaging }"></i>
+    </button>
+
+    <!-- Submenu -->
+    <div x-show="openMessaging"
+         x-transition
+         x-cloak
+         class="ml-8 space-y-1 text-sm">
+
+        <a href="{% url 'core:messages_inbox' %}"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Inbox
+        </a>
+
+        <a href="{% url 'core:messages_compose' %}"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Compose Message
+        </a>
+
+    </div>
+</div>
+
+
+        <!-- <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100">
+            <div class="flex items-center">
+                <i class="ri-bar-chart-2-line mr-3"></i> Live Class
+            </div>
+            <i class="ri-add-line"></i>
+        </div> -->
+
+
+        <!-- <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100">
+            <div class="flex items-center">
+                <i class="ri-bar-chart-2-line mr-3"></i> Question Paper
+            </div>
+            <i class="ri-add-line"></i>
+        </div> -->
+
+        <!-- Question Paper -->
+<div x-data="{ openQuestionPaper: false }" class="space-y-1">
+
+    <!-- Parent -->
+    <button
+        @click="openQuestionPaper = !openQuestionPaper"
+        class="w-full flex items-center justify-between px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+
+        <div class="flex items-center">
+            <i class="ri-file-text-line mr-3"></i>
+            <span>Question Paper</span>
+        </div>
+
+        <i class="ri-arrow-down-s-line transition-transform"
+           :class="{ 'rotate-180': openQuestionPaper }"></i>
+    </button>
+
+    <!-- Submenu -->
+    <div x-show="openQuestionPaper"
+         x-transition
+         x-cloak
+         class="ml-8 space-y-1 text-sm">
+
+        <a href="#"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Subject Chapters
+        </a>
+
+        <a href="#"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Question Bank
+        </a>
+
+        <a href="#"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Create Question Paper
+        </a>
+
+    </div>
+</div>
+
+<!-- <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100">
+            <div class="flex items-center">
+                <i class="ri-bar-chart-2-line mr-3"></i> Exams
+            </div>
+            <i class="ri-add-line"></i>
+        </div> -->
+
+        <!-- Exams -->
+<div x-data="{ openExams: false }" class="space-y-1">
+
+    <!-- Parent -->
+    <button
+        @click="openExams = !openExams"
+        class="w-full flex items-center justify-between px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+
+        <div class="flex items-center">
+            <i class="ri-bar-chart-2-line mr-3"></i>
+            <span>Exams</span>
+        </div>
+
+        <i class="ri-arrow-down-s-line transition-transform"
+           :class="{ 'rotate-180': openExams }"></i>
+    </button>
+
+    <!-- Submenu -->
+    <div x-show="openExams"
+         x-transition
+         x-cloak
+         class="ml-8 space-y-1 text-sm">
+
+        <a href="{% url 'core:create_exam' %}"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Create New Exam
+        </a>
+
+        
+
+
+
+    </div>
+</div>
+
+
+        <!-- <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100">
+            <div class="flex items-center">
+                <i class="ri-bar-chart-2-line mr-3"></i> Class Tests
+            </div>
+            <i class="ri-add-line"></i>
+        </div> -->
+
+        <!-- Class Tests -->
+<div x-data="{ openClassTests: false }" class="space-y-1">
+
+    <!-- Parent -->
+    <button
+        @click="openClassTests = !openClassTests"
+        class="w-full flex items-center justify-between px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+
+        <div class="flex items-center">
+            <i class="ri-bar-chart-2-line mr-3"></i>
+            <span>Class Tests</span>
+        </div>
+
+        <i class="ri-arrow-down-s-line transition-transform"
+           :class="{ 'rotate-180': openClassTests }"></i>
+    </button>
+
+    <!-- Submenu -->
+    <div x-show="openClassTests"
+         x-transition
+         x-cloak
+         class="ml-8 space-y-1 text-sm">
+
+        <a href="{% url 'core:manage_test_marks' %}"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Manage Test Marks
+        </a>
+
+        <a href="#"
+           class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Test Result
+        </a>
+
+    </div>
+</div>
+
+
+
+        <!-- <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100">
+            <div class="flex items-center">
+                <i class="ri-bar-chart-2-line mr-3"></i> Reports
+            </div>
+            <i class="ri-add-line"></i>
+        </div> -->
+
+        <!-- <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100">
+            <div class="flex items-center">
+                <i class="ri-bar-chart-2-line mr-3"></i> Certificates
+            </div>
+            <i class="ri-add-line"></i>
+        </div> -->
+
+    </nav>
+
+    <!-- Bottom CTA -->
+    <div class="p-4 mt-6 text-center">
+        <!-- <p class="text-xs text-gray-500 mb-2">
+            Need more advance?
+        </p> -->
+        <!-- <button class="bg-pink-500 text-white text-xs px-4 py-2 rounded-full">
+            Try Demo
+        </button> -->
+    </div>
+
+</aside>
+</div>

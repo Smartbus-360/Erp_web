@@ -1,0 +1,240 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+.modal-box {
+  background: #fff;
+  width: 520px;
+  max-height: 80vh;
+  overflow-y: auto;
+  border-radius: 10px;
+  padding: 20px;
+}
+.hidden {
+  display: none;
+}
+</style>
+
+<div class="content-wrapper">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb-bar">
+    <span class="text-muted">Attendance</span>
+    <span class="mx-2">|</span>
+    <span class="fw-semibold">Classwise Attendance Report</span>
+  </div>
+
+  <!-- Date Selector -->
+  <!-- <form method="get" class="max-w-sm mt-6">
+    <label class="form-label">Date</label>
+    <input type="date"
+           name="date"
+           value="{{ date_value }}"
+           class="form-control"
+           onchange="this.form.submit()">
+    <input type="hidden" name="class_name" value="{{ class_name }}">
+  </form> -->
+  <form method="get" class="flex gap-4 mt-6 items-end flex-wrap">
+
+  <!-- Date -->
+  <div>
+    <label class="form-label">Date</label>
+    <input type="date"
+           name="date"
+           value="{{ date_value }}"
+           class="form-control">
+  </div>
+
+  <!-- Class -->
+  <div>
+    <label class="form-label">Class</label>
+    <select name="class_name" class="form-control">
+      <option value="10" {% if class_name == "10" %}selected{% endif %}>10</option>
+      <option value="9" {% if class_name == "9" %}selected{% endif %}>9</option>
+    </select>
+  </div>
+
+  <!-- Section -->
+  <div>
+    <label class="form-label">Section</label>
+    <select name="section" class="form-control">
+      <option value="">All</option>
+      <option value="A" {% if section == "A" %}selected{% endif %}>A</option>
+      <option value="B" {% if section == "B" %}selected{% endif %}>B</option>
+    </select>
+  </div>
+
+  <!-- Apply -->
+  <button class="btn-primary">Apply</button>
+
+</form>
+
+
+  <!-- Report Card -->
+  <div class="card w-96 mt-10 p-6">
+
+    {% if total > 0 %}
+
+    <h3 class="text-center font-semibold mb-4">
+      Attendance report {{ date_value }} for
+      <div class="text-blue-600 text-xl mt-1">{{ class_name }}</div>
+    </h3>
+
+    <!-- Legend -->
+    <div class="flex justify-center gap-4 text-sm mb-4">
+      <span class="flex items-center gap-1">
+        <span class="w-3 h-3 bg-blue-500 rounded-full"></span> Present
+      </span>
+      <span class="flex items-center gap-1">
+        <span class="w-3 h-3 bg-purple-400 rounded-full"></span> On-leave
+      </span>
+      <span class="flex items-center gap-1">
+        <span class="w-3 h-3 bg-red-400 rounded-full"></span> Absent
+      </span>
+    </div>
+
+    <!-- Donut Chart -->
+    <div class="flex justify-center my-6">
+      <canvas id="attendanceDonut" width="180" height="180"></canvas>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-3 text-center gap-4 mt-4">
+
+      <div>
+        <div class="text-blue-600 font-semibold">
+          ↑ {{ present|floatformat:0 }}%
+        </div>
+        <div class="text-xl font-bold">{{ present }}</div>
+        <div class="text-blue-600">Present</div>
+      </div>
+
+      <div>
+        <div class="text-purple-400 font-semibold">↑ 0%</div>
+        <div class="text-xl font-bold">{{ leave }}</div>
+        <div class="text-purple-400">On-leave</div>
+      </div>
+
+      <div>
+        <div class="text-red-400 font-semibold">↑ 0%</div>
+        <div class="text-xl font-bold">{{ absent }}</div>
+        <div class="text-red-400">Absent</div>
+      </div>
+
+    </div>
+
+    {% else %}
+
+    <div class="text-center py-10">
+      <div class="text-4xl">😔</div>
+      <div class="mt-3 text-gray-500">
+        Attendance is not marked yet.
+      </div>
+    </div>
+
+    {% endif %}
+  </div>
+<!-- Student List Modal -->
+<div id="studentModal" class="modal hidden">
+
+  <div class="modal-box">
+
+    <h3 class="font-semibold text-lg mb-4">
+      Student Attendance List
+    </h3>
+
+    <table class="attendance-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in records %}
+        <tr>
+          <td>{{ s.student_id }}</td>
+          <td>{{ s.student_name }}</td>
+          <td>
+            {% if s.status == "present" %}
+              <span class="badge badge-success">Present</span>
+            {% elif s.status == "absent" %}
+              <span class="badge badge-danger">Absent</span>
+            {% else %}
+              <span class="badge badge-warning">Leave</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="text-right mt-4">
+      <button class="btn-secondary" onclick="closeModal()">Close</button>
+    </div>
+
+  </div>
+</div>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- <script>
+{% if total > 0 %}
+new Chart(document.getElementById("attendanceDonut"), {
+  type: "doughnut",
+  data: {
+    labels: ["Present", "On-leave", "Absent"],
+    datasets: [{
+      data: [{{ present }}, {{ leave }}, {{ absent }}],
+      backgroundColor: ["#3b82f6", "#a855f7", "#ef4444"]
+    }]
+  },
+  options: {
+    cutout: "70%",
+    plugins: { legend: { display: false } }
+  }
+});
+{% endif %}
+</script> -->
+
+<script>
+{% if total > 0 %}
+const donutChart = new Chart(document.getElementById("attendanceDonut"), {
+  type: "doughnut",
+  data: {
+    labels: ["Present", "On-leave", "Absent"],
+    datasets: [{
+      data: [{{ present }}, {{ leave }}, {{ absent }}],
+      backgroundColor: ["#3b82f6", "#a855f7", "#ef4444"]
+    }]
+  },
+  options: {
+    cutout: "70%",
+    plugins: { legend: { display: false } },
+    onClick: () => openModal()
+  }
+});
+
+function openModal() {
+  document.getElementById("studentModal").classList.remove("hidden");
+}
+
+function closeModal() {
+  document.getElementById("studentModal").classList.add("hidden");
+}
+{% endif %}
+</script>
+
+{% endblock %}

@@ -1,0 +1,160 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+.status-btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  background: #f9fafb;
+}
+
+.status-btn.present { background: #e6f4ff; }
+.status-btn.leave   { background: #f3e8ff; }
+.status-btn.absent  { background: #ffe4e6; }
+
+.status-btn.active {
+  border: 2px solid #000;
+  font-weight: bold;
+}
+</style>
+
+<div class="content-wrapper">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-bar">
+        <span class="text-muted">Attendance</span>
+        <span class="mx-2">|</span>
+        <span class="fw-semibold">Add / Update Attendance</span>
+    </div>
+
+    <!-- Card -->
+    <div class="card max-w-5xl mx-auto mt-10 p-8">
+
+        <!-- Header -->
+
+
+            <div class="text-sm">
+                
+            </div>
+        </div>
+
+        <h2 class="text-lg font-semibold mb-4">
+            Update Attendance
+        </h2>
+<input type="hidden" id="attendanceDate" value="{{ date }}">
+
+        <!-- Table -->
+        <table class="w-full border text-sm">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="p-3 text-left">ID</th>
+                    <th class="p-3">Photo</th>
+                    <th class="p-3 text-left">Student Name</th>
+                    <th class="p-3 text-left">Guardian</th>
+                    <th class="p-3 text-center">Status</th>
+                </tr>
+            </thead>
+
+<tbody>
+{% for student in students %}
+<tr class="border-t" data-student-id="{{ student.id }}">
+
+    <td class="p-3">{{ student.admission_no }}</td>
+
+    <td class="p-3 text-center">
+        <img src="{% static 'images/user-avatar.png' %}"
+             class="w-8 h-8 rounded-full mx-auto">
+    </td>
+
+    <td class="p-3">{{ student.name }}</td>
+    <td class="p-3">{{ student.guardian_name }}</td>
+
+    <td class="p-3 text-center">
+        <div class="flex justify-center gap-2">
+<button type="button" class="status-btn present !pointer-events-auto">P</button>
+<button type="button" class="status-btn leave !pointer-events-auto">L</button>
+<button type="button" class="status-btn absent !pointer-events-auto">A</button>
+
+        </div>
+    </td>
+
+</tr>
+{% endfor %}
+</tbody>
+        </table>
+
+        <!-- Update Button -->
+        <div class="text-center mt-6">
+            <button id="updateAttendanceBtn" class="btn btn-submit px-10">
+    ⟳ Update
+</button>
+
+        </div>
+
+    </div>
+
+</div>
+<script>
+const attendanceData = {};
+
+document.querySelectorAll(".status-btn").forEach(btn => {
+    btn.addEventListener("click", function () {
+
+        const row = this.closest("tr");
+        const studentId = row.dataset.studentId;
+
+        let status = "";
+        if (this.classList.contains("present")) status = "present";
+        if (this.classList.contains("leave")) status = "leave";
+        if (this.classList.contains("absent")) status = "absent";
+
+        attendanceData[studentId] = status;
+
+        row.querySelectorAll(".status-btn").forEach(b => b.classList.remove("active"));
+        this.classList.add("active");
+    });
+});
+
+document.getElementById("updateAttendanceBtn").addEventListener("click", async () => {
+
+    if (Object.keys(attendanceData).length === 0) {
+        alert("Please mark attendance before updating");
+        return;
+    }
+
+    const date = document.getElementById("attendanceDate").value;
+
+    for (const studentId in attendanceData) {
+
+        const payload = {
+    student_id: parseInt(studentId),
+    class_id: parseInt("{{ class_id }}"),
+    section_id: parseInt("{{ section_id }}"),
+    date: date,
+    status: attendanceData[studentId]
+};
+
+
+        const res = await fetch("https://erp.backend.smartbus360.com/attendance/students", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+"Authorization": "Bearer " + window.ACCESS_TOKEN   // correct
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            alert("Attendance failed for student ID " + studentId);
+            return;
+        }
+    }
+
+    alert("Attendance updated successfully ✅");
+});
+</script>
+
+{% endblock %}

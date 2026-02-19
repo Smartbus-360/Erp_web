@@ -1,0 +1,451 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="p-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-lg font-semibold">Employees | New Staff</h2>
+
+<button onclick="openCustomize()"
+        class="bg-red-400 text-white px-4 py-2 rounded-full text-sm">
+            🎛 Customize
+        </button>
+
+        <button onclick="openRoleModal()"
+            class="bg-indigo-600 text-white px-4 py-2 rounded-full text-sm">
+        ➕ Add Role
+    </button>
+
+        <div id="customizeModal"
+     class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center">
+
+  <div class="bg-white rounded-xl p-6 w-[400px]">
+    <h2 class="text-lg font-semibold mb-4">Customize Employee Form</h2>
+
+    <input id="field_label" class="input mb-2" placeholder="Field Label">
+    <input id="field_key" class="input mb-2" placeholder="Field Key (snake_case)">
+
+    <select id="field_type" class="input mb-2">
+      <option value="text">Text</option>
+      <option value="date">Date</option>
+      <option value="number">Number</option>
+    </select>
+
+    <label class="flex items-center gap-2 mb-4">
+      <input type="checkbox" id="is_required"> Required
+    </label>
+
+    <div class="flex justify-end gap-4">
+      <button onclick="closeCustomize()">Cancel</button>
+      <button onclick="saveField()" class="bg-indigo-600 text-white px-4 py-2 rounded">
+        Save
+      </button>
+    </div>
+  </div>
+</div>
+<div id="roleModal"
+     class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+
+  <div class="bg-white rounded-xl p-6 w-[360px]">
+    <h2 class="text-lg font-semibold mb-4">Add Employee Role</h2>
+
+    <input id="new_role_name"
+           class="input mb-4"
+           placeholder="Role name (e.g. Librarian)">
+
+    <div class="flex justify-end gap-4">
+      <button onclick="closeRoleModal()">Cancel</button>
+      <button onclick="saveRole()"
+              class="bg-indigo-600 text-white px-4 py-2 rounded">
+        Save
+      </button>
+    </div>
+  </div>
+</div>
+
+    </div>
+
+    <!-- Title -->
+    <div class="text-center mb-8">
+        <h1 class="text-2xl font-bold">Employee Form</h1>
+        <div class="flex justify-center gap-4 mt-2 text-sm">
+            <span class="flex items-center gap-2">
+                <span class="w-4 h-2 bg-indigo-500 rounded"></span> Required*
+            </span>
+            <span class="flex items-center gap-2">
+                <span class="w-4 h-2 bg-gray-400 rounded"></span> Optional
+            </span>
+        </div>
+    </div>
+
+    <!-- FORM -->
+<form class="space-y-10" onsubmit="submitEmployee(event)">
+
+        <!-- Basic Information -->
+        <div>
+            <h3 class="font-semibold mb-4">① Basic Information</h3>
+
+            <div class="grid grid-cols-3 gap-6">
+
+                <input  id="name" class="input" placeholder="Name of Employee *">
+                <input  id = "phone" class="input" placeholder="Mobile No for SMS/WhatsApp *">
+<select id="designation" class="input"></select>
+
+
+
+                <div>
+                    <input type="file" class="input">
+                    <p class="text-xs text-orange-500 mt-1">Max size 100KB</p>
+                </div>
+
+                <input type="date" class="input">
+                <input class="input" placeholder="Monthly Salary *">
+
+            </div>
+        </div>
+
+        <!-- Other Information -->
+        <div>
+            <h3 class="font-semibold mb-4">② Other Information</h3>
+
+            <div class="grid grid-cols-3 gap-6">
+
+                <input class="input" placeholder="Father / Husband Name">
+<select id="gender" class="input">
+    <option value="">Gender</option>
+    <option value="male">Male</option>
+    <option value="female">Female</option>
+    <option value="other">Other</option>
+</select>
+                <input class="input" placeholder="Experience">
+
+                <input class="input" placeholder="National ID">
+<select id="religion" class="input">
+    <option value="">Religion</option>
+    <option value="Hindu">Hindu</option>
+    <option value="Muslim">Muslim</option>
+    <option value="Christian">Christian</option>
+    <option value="Sikh">Sikh</option>
+    <option value="Other">Other</option>
+</select>
+                <input class="input" placeholder="Email Address">
+
+<input id="education" class="input" placeholder="Education">
+                <select class="input"><option>Blood Group</option></select>
+                <input type="date" class="input">
+
+<input id="address" class="input col-span-3" placeholder="Home Address">
+<div id="customFieldsContainer"
+     class="col-span-3 grid grid-cols-3 gap-6 mt-2">
+</div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-center gap-6 mt-8">
+            <button type="reset"
+                    class="bg-orange-400 text-white px-8 py-2 rounded-full">
+                🔄 Reset
+            </button>
+
+            <button type="submit"
+                    class="bg-indigo-600 text-white px-8 py-2 rounded-full">
+                ✔ Submit
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<!-- Reusable Input Style -->
+<style>
+.input{
+    width:100%;
+    padding:10px 16px;
+    border:1px solid #c7c7ff;
+    border-radius:9999px;
+    outline:none;
+}
+.input:focus{
+    border-color:#6366f1;
+    box-shadow:0 0 0 2px rgba(99,102,241,.2);
+}
+</style>
+<script>
+async function submitEmployee(event) {
+    event.preventDefault();
+
+    const payload = {
+        name: document.getElementById("name").value.trim(),
+        phone: document.getElementById("phone").value.trim(),
+        designation: document.getElementById("designation").value,
+        gender: document.getElementById("gender").value,
+        religion: document.getElementById("religion").value,
+        education: document.getElementById("education").value.trim(),
+        address: document.getElementById("address").value.trim(),
+        extra_fields: {}
+    };
+
+    if (!payload.name || !payload.phone || !payload.designation) {
+        alert("Please fill all required fields");
+        return;
+    }
+
+    // ✅ collect dynamic custom fields
+    document.querySelectorAll("[data-key]").forEach(el => {
+        payload.extra_fields[el.dataset.key] = el.value;
+    });
+
+    const res = await fetch(
+        "https://erp.backend.smartbus360.com/employees/",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + window.ACCESS_TOKEN
+            },
+            body: JSON.stringify(payload)
+        }
+    );
+
+    if (!res.ok) {
+        alert("Failed to add employee");
+        return;
+    }
+
+    alert("Employee added successfully");
+    window.location.href = "/employees/";
+}
+</script>
+
+<!-- <script>
+async function submitEmployee(event) {
+    event.preventDefault(); // stop page reload
+
+    const name = document.getElementById("name").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const designation = document.getElementById("designation").value;
+    const gender = document.getElementById("gender").value;
+const religion = document.getElementById("religion").value;
+const education = document.getElementById("education").value.trim();
+const address = document.getElementById("address").value.trim();
+
+payload.extra_fields = extra_fields;
+
+    if (!name || !phone || !designation) {
+        alert("Please fill all required fields");
+        return;
+    }
+
+    const payload = {
+        name: name,
+        phone: phone,
+        designation: designation,
+        gender: gender,
+    religion: religion,
+    education:education,
+    address:address
+    };
+
+    const res = await fetch("https://erp.backend.smartbus360.com/employees/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + window.ACCESS_TOKEN
+
+        },
+        body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+        alert("Failed to add employee");
+        return;
+    }
+
+    alert("Employee added successfully");
+    window.location.href = "/employees/";
+}
+</script> -->
+<script>
+function openCustomize(){
+  document.getElementById("customizeModal").classList.remove("hidden");
+  document.getElementById("customizeModal").classList.add("flex");
+}
+
+function closeCustomize(){
+  document.getElementById("customizeModal").classList.add("hidden");
+}
+
+async function saveField(){
+  const payload = {
+    field_label: document.getElementById("field_label").value,
+    field_key: document.getElementById("field_key").value,
+    field_type: document.getElementById("field_type").value,
+    is_required: document.getElementById("is_required").checked
+  };
+
+  const res = await fetch(
+    "https://erp.backend.smartbus360.com/employees/form-fields",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + window.ACCESS_TOKEN
+      },
+      body: JSON.stringify(payload)
+    }
+  );
+
+  if(!res.ok){
+    alert("Failed to save field");
+    return;
+  }
+
+  alert("Field added");
+  closeCustomize();
+  location.reload();
+}
+</script>
+<script>
+window.addEventListener("load", async () => {
+  const res = await fetch(
+    "https://erp.backend.smartbus360.com/employees/form-fields",
+    {
+      headers: {
+        "Authorization": "Bearer " + window.ACCESS_TOKEN
+      }
+    }
+  );
+
+  if (!res.ok) return;
+
+  const fields = await res.json();
+  const container = document.getElementById("customFieldsContainer");
+
+  fields.forEach(f => {
+    const input = document.createElement("input");
+
+    input.className = "input";
+    input.placeholder = f.field_label + (f.is_required ? " *" : "");
+    input.dataset.key = f.field_key;
+
+    if (f.field_type === "date") input.type = "date";
+    if (f.field_type === "number") input.type = "number";
+
+    container.appendChild(input);
+  });
+});
+</script>
+<script>
+window.addEventListener("load", async () => {
+
+  // Load custom fields
+  const fieldRes = await fetch(
+    "https://erp.backend.smartbus360.com/employees/form-fields",
+    { headers: { Authorization: "Bearer " + window.ACCESS_TOKEN } }
+  );
+
+  if (fieldRes.ok) {
+    const fields = await fieldRes.json();
+    const container = document.getElementById("customFieldsContainer");
+
+    fields.forEach(f => {
+      const input = document.createElement("input");
+      input.className = "input";
+      input.placeholder = f.field_label + (f.is_required ? " *" : "");
+      input.dataset.key = f.field_key;
+
+      if (f.field_type === "date") input.type = "date";
+      if (f.field_type === "number") input.type = "number";
+
+      container.appendChild(input);
+    });
+  }
+
+  // Load roles
+  const roleRes = await fetch(
+    "https://erp.backend.smartbus360.com/employees/roles",
+    { headers: { Authorization: "Bearer " + window.ACCESS_TOKEN } }
+  );
+
+  if (roleRes.ok) {
+    const roles = await roleRes.json();
+    const select = document.getElementById("designation");
+
+    select.innerHTML = `<option value="">Select Employee Role *</option>`;
+    roles.forEach(r => {
+      select.innerHTML += `<option value="${r.name}">${r.name}</option>`;
+    });
+  }
+
+});
+</script>
+<script>
+function openRoleModal(){
+  document.getElementById("roleModal").classList.remove("hidden");
+  document.getElementById("roleModal").classList.add("flex");
+}
+
+function closeRoleModal(){
+  document.getElementById("roleModal").classList.add("hidden");
+}
+
+async function saveRole(){
+  const name = document.getElementById("new_role_name").value.trim();
+
+  if (!name) {
+    alert("Role name is required");
+    return;
+  }
+
+  const res = await fetch(
+    "https://erp.backend.smartbus360.com/employees/roles",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + window.ACCESS_TOKEN
+      },
+      body: JSON.stringify({ name })
+    }
+  );
+
+  if (!res.ok) {
+    alert("Role already exists or permission denied");
+    return;
+  }
+
+  document.getElementById("new_role_name").value = "";
+  closeRoleModal();
+  loadRoles(); // 🔥 refresh dropdown instantly
+}
+</script>
+
+<!-- <script>
+window.addEventListener("load", async () => {
+  const res = await fetch(
+    "https://erp.backend.smartbus360.com/employees/form-fields",
+    {
+      headers: {
+        "Authorization": "Bearer " + window.ACCESS_TOKEN
+      }
+    }
+  );
+
+  const fields = await res.json();
+
+  const container = document.querySelector("② Other Information").nextElementSibling;
+
+  fields.forEach(f => {
+    const input = document.createElement("input");
+    input.className = "input";
+    input.placeholder = f.field_label + (f.is_required ? " *" : "");
+    input.dataset.key = f.field_key;
+    container.appendChild(input);
+  });
+});
+</script> -->
+
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-bar">
+        <span class="text-muted">Salary</span>
+        <span class="mx-2">|</span>
+        <span class="fw-semibold">Pay Salary</span>
+    </div>
+
+    <!-- Search Card -->
+    <div class="card max-w-md mx-auto mt-20 text-center p-8">
+
+
+<input id="empSearch"
+       placeholder="Search employee by name"
+       class="table-search w-full"
+       oninput="searchEmployee()">
+
+<div id="empResults" class="mt-4 space-y-2"></div>
+
+        <!-- Search Input -->
+        
+
+        <!-- Dummy Search Result -->
+        
+
+    </div>
+
+</div>
+<script>
+async function searchEmployee() {
+    const q = document.getElementById("empSearch").value;
+
+    const res = await fetch(
+        `https://erp.backend.smartbus360.com/employees/?search=${q}`,
+        {
+            headers: {
+                Authorization: "Bearer " + window.ACCESS_TOKEN
+            }
+        }
+    );
+
+    const data = await res.json();
+    const box = document.getElementById("empResults");
+    box.innerHTML = "";
+
+    data.forEach(emp => {
+        box.innerHTML += `
+            <div class="border p-3 rounded cursor-pointer hover:bg-gray-50"
+                 onclick="openPayForm(${emp.id})">
+                <b>${emp.name}</b> – ${emp.designation}
+            </div>
+        `;
+    });
+}
+
+function openPayForm(empId) {
+    window.location.href = `/salary/pay/${empId}/`;
+}
+
+function selectEmployee(id) {
+const employeeId = Number(document.getElementById("employee_id").value);
+    window.location.href = `/salary/pay/${empId}/`;
+}
+
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+const employeeId = Number(document.getElementById("employee_id").value);
+    if (!empId) return;
+
+    const res = await fetch(`https://erp.backend.smartbus360.com/employees/${empId}`, {
+        headers: {
+Authorization: "Bearer " + window.ACCESS_TOKEN
+
+        }
+    });
+
+    const emp = await res.json();
+
+    document.getElementById("empName").innerText = emp.name;
+    document.getElementById("empType").innerText = emp.designation;
+});
+</script>
+
+{% endblock %}

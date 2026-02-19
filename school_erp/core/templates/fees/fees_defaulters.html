@@ -1,0 +1,94 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<div class="flex justify-between items-center mb-6">
+    <!-- Month Picker -->
+    <div class="relative">
+        <label class="text-sm font-medium text-gray-600">Fees Month*</label>
+        <input type="month"
+               value="2025-12"
+               class="mt-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring w-60">
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex gap-3">
+        <button class="px-4 py-2 border rounded-lg text-blue-600 hover:bg-blue-50">
+            See Details
+        </button>
+
+        <button class="px-4 py-2 border rounded-lg text-pink-600 hover:bg-pink-50">
+            Send Reminder
+        </button>
+
+        <button class="px-4 py-2 border rounded-lg text-indigo-600 hover:bg-indigo-50">
+            Carry Forward Balance
+        </button>
+    </div>
+</div>
+
+<!-- Empty State -->
+<div id="defaultersContainer"></div>
+<script>
+const token = window.ACCESS_TOKEN;
+
+if (!token) {
+    alert("Session expired. Please login again.");
+    window.location.href = "/login";
+    throw new Error("Missing access token");
+}
+
+
+fetch("https://erp.backend.smartbus360.com/fees/defaulters", {
+    headers: {
+        "Authorization": "Bearer " + window.ACCESS_TOKEN,
+    }
+})
+.then(res => res.json())
+.then(data => {
+
+    const container = document.getElementById("defaultersContainer");
+
+    if (!data.length) {
+        container.innerHTML = `
+            <div class="bg-white rounded-xl shadow p-10 text-center">
+                <div class="text-4xl mb-3">🙂</div>
+                <p class="text-gray-600 text-lg">
+                    No Fee Defaulters
+                </p>
+            </div>
+        `;
+        return;
+    }
+
+    let rows = "";
+    data.forEach((s, i) => {
+        rows += `
+            <tr>
+                <td class="p-2 border">${i + 1}</td>
+                <td class="p-2 border">${s.name}</td>
+                <td class="p-2 border">${s.class}-${s.section}</td>
+                <td class="p-2 border">₹ ${s.due_amount}</td>
+            </tr>
+        `;
+    });
+
+    container.innerHTML = `
+        <div class="bg-white rounded-xl shadow p-6">
+            <table class="w-full border text-sm">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="p-2 border">#</th>
+                        <th class="p-2 border">Student</th>
+                        <th class="p-2 border">Class</th>
+                        <th class="p-2 border">Due Amount</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>
+    `;
+});
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Date Sheet – {{ exam.name }}</title>
+  <style>
+    body { font-family: Arial; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #333; padding: 10px; text-align: center; }
+    th { background: #f3f4f6; }
+    @media print {
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+
+<body>
+
+<div style="text-align:center">
+  <h2>{{ exam.name }}</h2>
+  <p>Class: {{ exam.class_name }}</p>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Subject</th>
+      <th>Teacher</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for s in schedule %}
+    <tr>
+      <td>{{ s.exam_date }}</td>
+      <td>{{ s.subject_name }}</td>
+      <td>{{ s.teacher_name }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<div class="no-print" style="margin-top:20px; text-align:center">
+  <button onclick="window.print()">Print Date Sheet</button>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,268 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="p-6">
+
+    <!-- Header -->
+    <div class="mb-6">
+        <h2 class="text-lg font-semibold">Students | Promote Students</h2>
+    </div>
+
+    <div class="grid grid-cols-12 gap-6">
+
+        <!-- LEFT SEARCH -->
+        <div class="col-span-3">
+            <div class="bg-white p-6 rounded-xl shadow">
+
+                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    🔍 Search
+                </h3>
+
+                <div class="mb-4">
+                    <label class="text-sm font-medium">Search Student*</label>
+                    <input
+                        id="searchInput"
+                        type="text"
+                        placeholder="Search Student"
+                        class="w-full mt-1 px-4 py-2 border rounded-full focus:ring-2 focus:ring-indigo-400"
+                    >
+                </div>
+
+                <div class="mb-4">
+                    <label class="text-sm font-medium">Select Class*</label>
+                    <select
+    id="fromClass"
+    class="w-full mt-1 px-4 py-2 border rounded-full focus:ring-2 focus:ring-indigo-400"
+>
+
+                        <option>Select*</option>
+                        <!-- <option>Class 12</option> -->
+                    </select>
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="#" class="text-sm text-indigo-500 underline">
+                        or, Reload All
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- CENTER STUDENT LIST -->
+        <div class="col-span-6">
+            <div class="bg-white p-6 rounded-xl shadow">
+
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="px-3 py-2 text-left">ID</th>
+                            <th class="px-3 py-2 text-left">Student Name</th>
+                            <th class="px-3 py-2 text-left">Class</th>
+                            <th class="px-3 py-2 text-center">
+                                <input type="checkbox"> Select All
+                            </th>
+                        </tr>
+                    </thead>
+
+<tbody id="studentsTable">
+                        <!-- <tr class="border-t">
+                            <td class="px-3 py-2 text-gray-500">23456</td>
+                            <td class="px-3 py-2">Aman</td>
+                            <td class="px-3 py-2">12</td>
+                            <td class="px-3 py-2 text-center">
+                                <input type="checkbox">
+                            </td>
+                        </tr> -->
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+
+        <!-- RIGHT PROMOTE PANEL -->
+        <div class="col-span-3">
+            <div class="bg-white p-6 rounded-xl shadow text-center">
+
+                <h3 class="text-lg font-semibold text-indigo-500 mb-4">
+                    Promote in
+                </h3>
+
+                <div class="mb-6 text-left">
+                    <label class="text-sm font-medium">Select Class*</label>
+<select
+    id="toClass"
+    class="w-full mt-1 px-4 py-2 border rounded-full focus:ring-2 focus:ring-indigo-400"
+>
+
+                        <option>Select*</option>
+                        <!-- <option>Class 13</option> -->
+                    </select>
+                </div>
+
+                <select
+    id="fromSection"
+    class="w-full mt-1 px-4 py-2 border rounded-full"
+>
+    <option value="">All Sections</option>
+</select>
+
+
+<button
+    id="promoteBtn"
+    class="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 rounded-full flex items-center justify-center gap-2"
+>
+
+                    ✔ Save Changes
+                </button>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% block page_js %}
+<script>
+let selectedStudents = [];
+
+// Load classes into dropdowns
+async function loadClasses() {
+    const res = await fetch("https://erp.backend.smartbus360.com/classes/", {
+        headers: {
+            "Authorization": "Bearer " + window.ACCESS_TOKEN
+
+        }
+    });
+
+    const classes = await res.json();
+
+    const fromClass = document.getElementById("fromClass");
+    const toClass = document.getElementById("toClass");
+
+    fromClass.innerHTML = '<option value="">Select*</option>';
+    toClass.innerHTML = '<option value="">Select*</option>';
+
+    classes.forEach(cls => {
+fromClass.innerHTML += `
+    <option value="${cls.name}" data-id="${cls.id}">
+        ${cls.name}
+    </option>`;
+        toClass.innerHTML += `<option value="${cls.id}">${cls.name}</option>`;
+    });
+}
+
+async function loadStudents() {
+    const className = document.getElementById("fromClass").value;
+    const section = document.getElementById("fromSection").value;
+    const search = document.getElementById("searchInput").value;
+
+    let url = "https://erp.backend.smartbus360.com/students/?";
+
+    if (className) url += `class_name=${className}&`;
+    if (section) url += `section=${section}&`;
+    if (search) url += `search=${search}&`;
+
+    const res = await fetch(url, {
+        headers: {
+Authorization: "Bearer " + window.ACCESS_TOKEN
+
+        }
+    });
+
+    const students = await res.json();
+    const table = document.getElementById("studentsTable");
+    table.innerHTML = "";
+
+    students.forEach(s => {
+        table.innerHTML += `
+        <tr>
+            <td>${s.admission_no}</td>
+            <td>${s.name}</td>
+            <td>${s.class_name}-${s.section}</td>
+            <td><input type="checkbox" onchange="toggleStudent(${s.id}, this.checked)"></td>
+        </tr>`;
+    });
+}
+async function loadSections() {
+    const className = document.getElementById("fromClass").value;
+    if (!className) return;
+
+
+    // find selected class ID from dropdown
+    const classOption = [...document.getElementById("fromClass").options]
+        .find(o => o.value === className);
+
+    const classId = classOption?.dataset?.id;
+    if (!classId) return;
+
+    const res = await fetch(
+        `https://erp.backend.smartbus360.com/sections/by-class/${classId}`,
+        { headers: { Authorization: "Bearer " + window.ACCESS_TOKEN,} }
+    );
+
+    const sections = await res.json();
+    const sectionSelect = document.getElementById("fromSection");
+
+    sectionSelect.innerHTML = `<option value="">All Sections</option>`;
+
+    sections.forEach(sec => {
+        sectionSelect.innerHTML += `
+            <option value="${sec.name}">${sec.name}</option>
+        `;
+    });
+}
+ 
+document.getElementById("fromClass").addEventListener("change", async () => {
+    await loadSections();   // load sections for selected class
+    loadStudents();         // load students
+});
+
+document.getElementById("fromSection").addEventListener("change", loadStudents);
+document.getElementById("searchInput").addEventListener("keyup", loadStudents);
+
+function toggleStudent(id, checked) {
+    if (checked) {
+        selectedStudents.push(id);
+    } else {
+        selectedStudents = selectedStudents.filter(x => x !== id);
+    }
+}
+
+// Promote students
+document.getElementById("promoteBtn").addEventListener("click", async () => {
+    const toClassId = document.getElementById("toClass").value;
+
+    if (!toClassId || selectedStudents.length === 0) {
+        alert("Select students and target class");
+        return;
+    }
+
+    const res = await fetch("https://erp.backend.smartbus360.com/promotion/", {
+        method: "POST",
+        headers: {
+            "Authorization": "Bearer " + window.ACCESS_TOKEN,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            student_ids: selectedStudents,
+            to_class_id: parseInt(toClassId),
+            to_section: "A"
+        })
+    });
+
+    if (!res.ok) {
+        alert("Promotion failed");
+        return;
+    }
+
+    alert("Students promoted successfully");
+    location.reload();
+});
+
+loadClasses();
+</script>
+{% endblock %}
+
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base/base.html" %}
+{% block content %}
+
+<div class="p-6">
+
+    <!-- Page Title -->
+    <h2 class="text-lg font-semibold mb-4">
+        Accounts | Account statement
+    </h2>
+
+    <!-- Top Filters -->
+    <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
+
+        <!-- Date Range -->
+        <button class="flex items-center gap-2 bg-indigo-600 text-white 
+                       px-4 py-2 rounded-lg">
+            📅 Dec 1, 2025 - Dec 17, 2025
+            ⌄
+        </button>
+
+        <!-- Actions -->
+        <div class="flex gap-3">
+            <button class="border px-4 py-2 rounded-lg flex items-center gap-2">
+                🔍 Show References
+            </button>
+            <button class="border px-4 py-2 rounded-lg text-blue-600">
+                🔄 Reset Profit
+            </button>
+            <button class="border px-4 py-2 rounded-lg text-red-500">
+                🗑 Delete
+            </button>
+        </div>
+    </div>
+
+    <!-- Table Card -->
+    <div class="bg-white rounded-xl shadow p-6">
+
+        <!-- Export + Search -->
+        <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+
+            <div class="flex gap-2 flex-wrap">
+                <button class="table-btn">Copy</button>
+                <button class="table-btn">CSV</button>
+                <button class="table-btn">Excel</button>
+                <button class="table-btn">PDF</button>
+                <button class="table-btn">Print</button>
+            </div>
+
+            <input type="text"
+                   placeholder="Search:"
+                   class="border px-3 py-1 rounded">
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="p-2 text-left">Date</th>
+                        <th class="p-2 text-left">Description</th>
+                        <th class="p-2 text-right">Debit</th>
+                        <th class="p-2 text-right">Credit</th>
+                        <th class="p-2 text-right">Net Balance</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr class="border-t">
+                        <td class="p-2">17-12-2025</td>
+                        <td class="p-2">3200</td>
+                        <td class="p-2 text-right">—</td>
+                        <td class="p-2 text-right text-blue-600">+$22</td>
+                        <td class="p-2 text-right text-green-600">$22</td>
+                    </tr>
+
+                    <tr class="border-t">
+                        <td class="p-2">17-12-2025</td>
+                        <td class="p-2 text-gray-500">
+                            Reset the account balance and profit
+                        </td>
+                        <td class="p-2 text-right">—</td>
+                        <td class="p-2 text-right text-blue-600">-$22</td>
+                        <td class="p-2 text-right text-green-600">$0</td>
+                    </tr>
+
+                    <!-- Total Row -->
+                    <tr class="border-t font-semibold">
+                        <td colspan="2" class="p-2 text-right">Total</td>
+                        <td class="p-2 text-right">$0</td>
+                        <td class="p-2 text-right">$0</td>
+                        <td class="p-2 text-right">$0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <p class="text-sm mt-4">
+            Showing 1 to 2 of 2 entries
+        </p>
+
+    </div>
+</div>
+
+{% endblock %}

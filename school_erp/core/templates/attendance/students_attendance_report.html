@@ -1,0 +1,399 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+/* ---------- Page ---------- */
+.page-container {
+    max-width: 1200px;
+    margin: auto;
+}
+
+/* ---------- Cards ---------- */
+.attendance-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+}
+
+/* ---------- Header Buttons ---------- */
+.table-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    font-size: 13px;
+    cursor: pointer;
+}
+.table-btn:hover {
+    background: #eef2ff;
+}
+
+/* ---------- Search ---------- */
+.table-search {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+}
+
+/* ---------- Date Button ---------- */
+.date-range-btn {
+    background: #4f46e5;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+/* ---------- Table ---------- */
+.attendance-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    font-size: 14px;
+}
+
+.attendance-table thead th {
+    text-align: left;
+    padding: 10px 12px;
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.attendance-table tbody tr {
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+.attendance-table tbody td {
+    padding: 14px 12px;
+    vertical-align: middle;
+}
+
+/* ---------- Status Pills ---------- */
+.status-pill {
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-pill.present { background: #e0f2fe; color: #0369a1; }
+.status-pill.absent  { background: #fee2e2; color: #991b1b; }
+.status-pill.leave   { background: #ede9fe; color: #5b21b6; }
+
+/* ---------- Chart ---------- */
+#monthlyChart {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 30px;
+}
+</style>
+
+<style>
+.status-pill {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 12px;
+}
+.status-pill.present { background: #e6f4ff; color: #2563eb; }
+.status-pill.absent  { background: #ffe4e6; color: #dc2626; }
+.status-pill.leave   { background: #f3e8ff; color: #7c3aed; }
+</style>
+<style>
+.preset-item {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+.preset-item:hover {
+    background: #f1f5f9;
+}
+</style>
+
+<div class="content-wrapper">
+    <div class="page-container">
+
+        <!-- Breadcrumb -->
+        <div class="breadcrumb-bar">
+            <span class="text-muted">Attendance</span>
+            <span class="mx-2">|</span>
+            <span class="fw-semibold">Students Attendance Record</span>
+        </div>
+
+        <!-- Date Range -->
+        <!-- <div class="mt-4 mb-4">
+            <button class="date-range-btn">
+                <i class="bi bi-calendar"></i>
+                Dec 1, 2025 - Dec 17, 2025
+                <i class="bi bi-chevron-down"></i>
+            </button>
+        </div> -->
+
+        <!-- Table Card -->
+        <div class="card attendance-card">
+
+            <!-- Export + Search -->
+            <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+
+                <div class="flex gap-2">
+                    <!-- <button class="table-btn">Copy</button> -->
+                    <!-- <button class="table-btn">CSV</button> -->
+                    <!-- <button class="table-btn">Excel</button> -->
+<button class="table-btn"
+onclick="window.open(
+'https://erp.backend.smartbus360.com/attendance-reports/students/pdf?start_date={{ start_date }}&end_date={{ end_date }}',
+'_blank'
+)">
+PDF
+</button>
+
+                    <!-- <button class="table-btn">Print</button> -->
+                </div>
+
+                <div class="flex items-center gap-2">
+<label class="text-sm text-gray-500">Search Student</label>
+                    <input type="text" class="table-search w-64">
+                </div>
+
+            </div>
+            <div class="relative inline-block mb-4">
+    <button type="button" id="presetToggle" class="date-range-btn">
+        <i class="bi bi-calendar"></i>
+        Preset Ranges
+        <i class="bi bi-chevron-down"></i>
+    </button>
+
+    <div id="presetMenu" class="hidden absolute bg-white border rounded shadow mt-1 z-50">
+        <div class="preset-item" data-range="today">Today</div>
+        <div class="preset-item" data-range="this_month">This Month</div>
+        <div class="preset-item" data-range="last_month">Last Month</div>
+    </div>
+</div>
+
+<form method="get" class="flex gap-3 items-center mb-4">
+    <input type="date" name="start_date"
+           value="{{ start_date }}"
+           class="form-control w-44">
+
+    <span>to</span>
+
+    <input type="date" name="end_date"
+           value="{{ end_date }}"
+           class="form-control w-44">
+
+    <button class="btn btn-submit">Apply</button>
+</form>
+<div class="flex gap-4 mb-4 flex-wrap items-end">
+    <div>
+        <label class="text-sm text-gray-500">Class</label>
+<select id="classFilter" class="form-control w-40">
+    <option value="">All</option>
+    {% regroup records by class_name as class_list %}
+    {% for c in class_list %}
+        <option value="{{ c.grouper }}">{{ c.grouper }}</option>
+    {% endfor %}
+</select>
+
+    </div>
+
+    <div>
+        <label class="text-sm text-gray-500">Section</label>
+<select id="sectionFilter" class="form-control w-40">
+    <option value="">All</option>
+    {% regroup records by section as section_list %}
+    {% for s in section_list %}
+        <option value="{{ s.grouper }}">{{ s.grouper }}</option>
+    {% endfor %}
+</select>
+
+    </div>
+</div>
+
+<div class="attendance-card mb-6">
+    <canvas id="monthlyChart" height="140"></canvas>
+</div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="attendance-table">
+
+<thead>
+<tr data-section="{{ r.section }}">
+    <th style="width:14%">Date</th>
+    <th style="width:10%">Day</th>
+    <th style="width:10%">ID</th>
+    <th style="width:26%">Name</th>
+    <th style="width:10%">Class</th>
+    <th style="width:10%">Status</th>
+</tr>
+</thead>
+
+
+<tbody id="attendanceTableBody">
+{% for r in records %}
+<tr data-section="{{ r.section }}">
+    <td>{{ r.date|date:"d-m-y" }}</td>
+    <td>{{ r.date|date:"D" }}</td>
+    <td>{{ r.student_id }}</td>
+    <td>{{ r.student_name }}</td>
+    <td>{{ r.class_name }}</td>
+    <td>
+        {% if r.status == "present" %}
+            <span class="status-pill present">P</span>
+        {% elif r.status == "absent" %}
+            <span class="status-pill absent">A</span>
+        {% else %}
+            <span class="status-pill leave">L</span>
+        {% endif %}
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="6" class="text-center text-gray-400">
+        No attendance records found
+    </td>
+</tr>
+{% endfor %}
+</tbody>
+
+                </table>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-sm text-gray-500 mt-3">
+                Showing 1 to 1 of 1 entries
+            </div>
+
+        </div>
+
+    </div>
+</div>
+<script>
+const toggle = document.getElementById("presetToggle");
+const menu = document.getElementById("presetMenu");
+
+toggle.onclick = () => menu.classList.toggle("hidden");
+
+document.querySelectorAll(".preset-item").forEach(item => {
+    item.onclick = () => {
+        const range = item.dataset.range;
+        const today = new Date();
+        let start, end;
+
+        if (range === "today") {
+            start = end = today;
+        }
+        if (range === "this_month") {
+            start = new Date(today.getFullYear(), today.getMonth(), 1);
+            end = today;
+        }
+        if (range === "last_month") {
+            start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            end = new Date(today.getFullYear(), today.getMonth(), 0);
+        }
+
+        document.querySelector("input[name='start_date']").value = start.toISOString().split("T")[0];
+        document.querySelector("input[name='end_date']").value = end.toISOString().split("T")[0];
+
+        document.querySelector("form").submit();
+    };
+});
+</script>
+<script>
+document.querySelector(".table-search").addEventListener("keyup", function () {
+    const search = this.value.toLowerCase();
+    document.querySelectorAll("#attendanceTableBody tr").forEach(row => {
+        const name = row.children[3]?.innerText.toLowerCase();
+        row.style.display = name.includes(search) ? "" : "none";
+    });
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const stats = { present: 0, absent: 0, leave: 0 };
+
+document.querySelectorAll("#attendanceTableBody tr").forEach(row => {
+    const status = row.children[5]?.innerText.trim();
+    if (status === "P") stats.present++;
+    if (status === "A") stats.absent++;
+    if (status === "L") stats.leave++;
+});
+
+new Chart(document.getElementById("monthlyChart"), {
+    type: "bar",
+    data: {
+        labels: ["Present", "Absent", "Leave"],
+        datasets: [{
+            data: [stats.present, stats.absent, stats.leave],
+            backgroundColor: ["#3b82f6", "#ef4444", "#8b5cf6"]
+        }]
+    },
+    options: {
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+    }
+});
+</script>
+<script>
+function applyFilters() {
+    const cls = document.getElementById("classFilter").value;
+    const sec = document.getElementById("sectionFilter").value;
+
+    document.querySelectorAll("#attendanceTableBody tr").forEach(row => {
+        const rowClass = row.children[4].innerText.trim();
+        const rowSection = row.dataset.section;
+
+        let show = true;
+        if (cls && rowClass !== cls) show = false;
+        if (sec && rowSection !== sec) show = false;
+
+        row.style.display = show ? "" : "none";
+    });
+}
+
+document.getElementById("classFilter").onchange = applyFilters;
+document.getElementById("sectionFilter").onchange = applyFilters;
+</script>
+<canvas id="monthlyChart" height="120"></canvas>
+
+<script>
+async function loadMonthlyChart() {
+    const month = new Date().toISOString().slice(0,7);
+
+    const url = new URL("https://erp.backend.smartbus360.com/attendance-reports/monthly");
+    url.searchParams.append("class_id", "{{ selected_class_id }}");
+    url.searchParams.append("month", month);
+
+    const res = await fetch(url, {
+        headers: {
+            "Authorization": "Bearer {{ request.session.auth.access_token }}"
+        }
+    });
+
+    const data = await res.json();
+
+    new Chart(document.getElementById("monthlyChart"), {
+        type: "bar",
+        data: {
+            labels: ["Present", "Absent", "Leave"],
+            datasets: [{
+                data: [data.present, data.absent, data.leave],
+                backgroundColor: ["#22c55e", "#ef4444", "#a855f7"]
+            }]
+        }
+    });
+}
+
+loadMonthlyChart();
+</script>
+
+{% endblock %}

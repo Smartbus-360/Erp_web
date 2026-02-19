@@ -1,0 +1,405 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<!-- Breadcrumb -->
+<div class="mb-6 text-sm text-gray-500 flex items-center gap-2">
+    <span class="font-medium text-gray-800">Classes</span>
+    <span>/</span>
+    <span>Add New Class</span>
+</div>
+
+<!-- Page Wrapper -->
+<div class="flex justify-center">
+
+    <!-- Card -->
+    <div class="bg-white border rounded-2xl p-10 w-full max-w-xl">
+
+        <!-- Title -->
+        <h2 class="text-2xl font-semibold text-center mb-2">
+            Add New Class
+        </h2>
+
+        <!-- Required / Optional Legend -->
+        <div class="flex justify-center gap-6 text-sm mb-8">
+            <div class="flex items-center gap-2">
+                <span class="w-4 h-2 bg-indigo-500 rounded-full"></span>
+                Required*
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-4 h-2 bg-gray-400 rounded-full"></span>
+                Optional
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form class="space-y-6">
+
+            <!-- Class Name -->
+            <div>
+                <label class="text-xs bg-indigo-500 text-white px-3 py-1 rounded-full inline-block mb-2">
+                    Class Name*
+                </label>
+                <input
+                id="className"
+                    type="text"
+                    placeholder="Name Of Class"
+                    class="w-full px-5 py-3 border rounded-full focus:ring-2 focus:ring-indigo-400 outline-none"
+                >
+            </div>
+
+            <!-- Sections -->
+<!-- Sections -->
+<div>
+  <label class="text-xs bg-indigo-500 text-white px-3 py-1 rounded-full mb-2 inline-block">
+    Sections*
+  </label>
+
+  <!-- 🔴 THIS CONTAINER WAS MISSING -->
+  <div id="sectionsContainer" class="space-y-2">
+    <div class="section-row flex gap-2">
+      <input
+        type="text"
+        placeholder="Section Name (e.g. A)"
+        class="section-input w-full px-5 py-3 border rounded-full"
+      >
+      <select
+        class="section-teacher w-full px-5 py-3 border rounded-full">
+        <option value="">Teacher</option>
+      </select>
+    </div>
+  </div>
+
+  <button
+    type="button"
+    onclick="addSection()"
+    class="mt-2 text-indigo-600 text-sm cursor-pointer">
+    + Add another section
+  </button>
+</div>
+
+
+
+            <!-- Monthly Tuition Fees -->
+            <div>
+                <label class="text-xs bg-indigo-500 text-white px-3 py-1 rounded-full inline-block mb-2">
+                    Monthly Tuition Fees*
+                </label>
+<input
+    type="number"
+    id="monthlyFee"
+    placeholder="Monthly Tuition Fees"
+    class="w-full px-5 py-3 border rounded-full"
+>
+
+            </div>
+
+            <!-- Class Teacher -->
+            <div>
+                <label class="text-xs bg-indigo-500 text-white px-3 py-1 rounded-full inline-block mb-2">
+Select Class Coordinator*
+                </label>
+<select id="coordinatorSelect"
+        class="w-full px-5 py-3 border rounded-full">
+    <option value="">Select*</option>
+</select>
+
+            </div>
+
+            <!-- Create Button -->
+            <div class="flex justify-center pt-4">
+                <button
+                    type="submit"
+                    class="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-black font-medium px-8 py-3 rounded-full transition"
+                >
+                    <i class="ri-add-line"></i>
+                    Create
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+{% block page_js %}
+<!-- <script>
+document.querySelector("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const className = document
+        .querySelector("input[placeholder='Name Of Class']")
+        .value
+        .trim();
+
+    if (!className) {
+        alert("Class name required");
+        return;
+    }
+
+    const res = await fetch("https://erp.backend.smartbus360.com/classes/", {
+        method: "POST",
+        headers: {
+            "Authorization": "Bearer " + localStorage.getItem("access_token"),
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ name: className })
+    });
+
+    if (!res.ok) {
+        alert("Failed to create class");
+        return;
+    }
+
+    window.location.href = "/classes/";
+});
+</script> -->
+<script>
+function addSection() {
+  const container = document.getElementById("sectionsContainer");
+
+  container.innerHTML += `
+    <div class="section-row flex gap-2">
+      <input
+        type="text"
+        placeholder="Section Name (e.g. A)"
+        class="section-input w-full px-5 py-3 border rounded-full"
+      >
+
+      <select
+        class="section-teacher w-full px-5 py-3 border rounded-full">
+        <option value="">Teacher</option>
+      </select>
+    </div>
+  `;
+
+  populateTeacherDropdowns();
+}
+
+document.querySelector("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const className = document.querySelector("input[placeholder='Name Of Class']").value;
+const coordinatorId = document.getElementById("coordinatorSelect").value;
+    const monthlyFee = document.getElementById("monthlyFee").value;
+    // const pathParts = window.location.pathname.split("/");
+// const editingClassId = pathParts.includes("edit")
+//     ? pathParts[pathParts.length - 1]
+//     : null;
+const editingClassId = classId;
+
+    const sections = [...document.querySelectorAll(".section-row")]
+  .map(row => ({
+    name: row.querySelector(".section-input").value.trim(),
+    teacher_id: row.querySelector(".section-teacher").value || null
+  }))
+  .filter(sec => sec.name);
+
+
+    if (!className || !sections.length || !monthlyFee) {
+        alert("All fields required");
+        return;
+    }
+
+    /* 1️⃣ Create Class */
+    // const classRes = await fetch("https://erp.backend.smartbus360.com/classes/", {
+    //     method: "POST",
+    //     headers: {
+    //         ,
+    //         "Content-Type": "application/json"
+    //     },
+    //     body: JSON.stringify({
+    //         name: className,
+    //         class_teacher_id: teacherId
+    //     })
+    // });
+const url = editingClassId
+    ? `https://erp.backend.smartbus360.com/classes/${editingClassId}`
+    : "https://erp.backend.smartbus360.com/classes/";
+
+const method = editingClassId ? "PUT" : "POST";
+
+const classRes = await fetch(url, {
+    method,
+    headers: {
+        "Content-Type": "application/json",
+Authorization: "Bearer " + window.ACCESS_TOKEN,
+    },
+    body: JSON.stringify({
+        name: className,
+class_coordinator_id: coordinatorId
+    })
+});
+
+const cls = await classRes.json();
+
+
+    /* 2️⃣ Create Sections */
+    for (const sec of sections) {
+        await fetch("https://erp.backend.smartbus360.com/classes/sections", {
+            method: "POST",
+            headers: {
+Authorization: "Bearer " + window.ACCESS_TOKEN,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                name: sec.name,
+  teacher_id: sec.teacher_id,
+  class_id: cls.id
+
+            })
+        });
+    }
+
+    /* 3️⃣ Save Monthly Fee */
+    await fetch("https://erp.backend.smartbus360.com/fees/structure/save", {
+        method: "POST",
+        headers: {
+Authorization: "Bearer " + window.ACCESS_TOKEN,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            scope: "CLASS",
+            class_id: cls.id,
+            fees: [
+                { fee_name: "Monthly Tuition Fee", amount: monthlyFee }
+            ]
+        })
+    });
+
+    alert("Class created successfully");
+    window.location.href = "/classes/";
+});
+</script>
+
+<script>
+let TEACHERS = [];
+
+async function loadTeachers() {
+  const res = await fetch(
+    "https://erp.backend.smartbus360.com/employees/",
+    { headers: { Authorization: "Bearer " + window.ACCESS_TOKEN } }
+  );
+
+  if (!res.ok) return;
+
+  TEACHERS = await res.json();
+
+  populateTeacherDropdowns();
+  populateCoordinatorDropdown();
+}
+
+function populateTeacherDropdowns() {
+  document.querySelectorAll(".section-teacher").forEach(select => {
+    const selected = select.value;
+
+    select.innerHTML = `<option value="">Teacher</option>`;
+    TEACHERS.forEach(t => {
+      select.innerHTML += `
+        <option value="${t.id}">
+          ${t.name}
+        </option>`;
+    });
+
+    select.value = selected;
+  });
+}
+
+function populateCoordinatorDropdown() {
+  const select = document.getElementById("coordinatorSelect");
+
+  select.innerHTML = `<option value="">Select*</option>`;
+  TEACHERS.forEach(t => {
+    select.innerHTML += `
+      <option value="${t.id}">
+        ${t.name}
+      </option>`;
+  });
+}
+
+async function loadCoordinators() {
+  const res = await fetch("https://erp.backend.smartbus360.com/employees/", {
+    headers: { Authorization: "Bearer " + window.ACCESS_TOKEN }
+  });
+
+  if (!res.ok) return;
+
+  const employees = await res.json();
+  const select = document.getElementById("coordinatorSelect");
+
+  select.innerHTML = `<option value="">Select*</option>`;
+
+  employees.forEach(e => {
+    select.innerHTML += `<option value="${e.id}">${e.name}</option>`;
+  });
+}
+
+</script>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const classId = params.get("class_id");
+
+async function loadClassForEdit() {
+  if (!classId) return;
+
+  const res = await fetch(
+    "https://erp.backend.smartbus360.com/classes/" + classId,
+    {
+      headers: {
+      Authorization: "Bearer " + window.ACCESS_TOKEN
+    }
+
+    }
+  );
+
+  const data = await res.json();
+console.log("EDIT CLASS DATA:", data);
+
+  // Prefill class name
+document.getElementById("className").value = data.name || "";
+
+  // Prefill monthly fee
+document.getElementById("monthlyFee").value = data.monthly_fee || "";
+
+  // Prefill teacher
+document.getElementById("coordinatorSelect").value =
+  data.class_coordinator?.id || "";
+
+  // Prefill sections
+  const container = document.getElementById("sectionsContainer");
+  container.innerHTML = "";
+if (Array.isArray(data.sections)) {
+  data.sections.forEach(sec => {
+container.innerHTML += `
+  <div class="section-row flex gap-2">
+    <input
+      type="text"
+      value="${sec.name}"
+      class="section-input w-full px-5 py-3 border rounded-full"
+    >
+    <select
+      class="section-teacher w-full px-5 py-3 border rounded-full"
+      data-selected="${sec.teacher_id || ""}">
+      <option value="">Teacher</option>
+    </select>
+  </div>
+`;
+populateTeacherDropdowns();
+
+  });
+}
+}
+// load teachers first, then class data
+loadTeachers().then(loadClassForEdit);
+
+
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadTeachers();
+});
+</script>
+
+{% endblock %}
+
+{% endblock %}

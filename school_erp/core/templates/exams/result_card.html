@@ -1,0 +1,85 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<div class="content-wrapper max-w-4xl">
+
+<h2 class="text-xl font-semibold mb-6">Result Card</h2>
+
+<form method="get" class="grid grid-cols-4 gap-4 mb-6">
+
+  <select name="exam_id" class="form-control" onchange="this.form.submit()">
+    <option value="">Exam</option>
+    {% for e in exams %}
+      <option value="{{ e.id }}">{{ e.name }}</option>
+    {% endfor %}
+  </select>
+
+  <select name="class_id" class="form-control" onchange="this.form.submit()">
+    <option value="">Class</option>
+    {% for c in classes %}
+      <option value="{{ c.id }}">{{ c.name }}</option>
+    {% endfor %}
+  </select>
+
+  <select name="section_id" class="form-control" onchange="this.form.submit()">
+    <option value="">Section</option>
+    {% for s in sections %}
+      <option value="{{ s.id }}">{{ s.name }}</option>
+    {% endfor %}
+  </select>
+
+  <select name="student_id" class="form-control" onchange="this.form.submit()">
+    <option value="">Student</option>
+    {% for s in students %}
+      <option value="{{ s.id }}">{{ s.name }}</option>
+    {% endfor %}
+  </select>
+
+</form>
+
+{% if results %}
+
+<div class="border rounded p-6">
+
+<h3 class="text-lg font-semibold mb-4">Marks</h3>
+
+<table class="table w-full">
+  <thead>
+    <tr>
+      <th>Subject</th>
+      <th>Marks</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for r in results %}
+  <tr>
+    <td>{{ r.subject_name }}</td>
+    <td>{{ r.marks }}</td>
+  </tr>
+  {% endfor %}
+</tbody>
+
+</table>
+
+<div class="mt-4 text-right font-semibold">
+  Total: {{ total_marks }}
+</div>
+
+<div class="mt-2 text-right">
+  Percentage: {{ percentage }}%
+</div>
+
+
+<button onclick="window.print()" class="btn btn-primary mt-4">
+  Print Result Card
+</button>
+
+</div>
+
+{% else %}
+<p class="text-gray-500">Select all fields to view result.</p>
+{% endif %}
+
+</div>
+
+{% endblock %}

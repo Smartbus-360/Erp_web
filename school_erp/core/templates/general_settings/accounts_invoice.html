@@ -1,0 +1,166 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<div class="bg-gray-100 min-h-screen">
+
+    <!-- Breadcrumb -->
+    <div class="bg-white rounded-lg px-6 py-3 mb-6 shadow-sm">
+        <h2 class="text-gray-700 font-semibold text-sm">
+            General Settings
+            <span class="mx-2">|</span>
+            <span class="text-gray-500">Fee Challan Details</span>
+        </h2>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- LEFT : Add New Bank -->
+        <div class="bg-white rounded-xl p-6 shadow-sm">
+
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                Add New Bank
+            </h3>
+
+            <!-- Bank Logo -->
+            <div class="mb-4">
+                <label class="text-sm font-medium text-gray-600">
+                    Bank Logo
+                </label>
+
+                <div class="mt-2 flex items-center gap-4 border border-indigo-300 rounded-xl p-4">
+                    <div class="w-16 h-16 flex items-center justify-center border rounded-lg text-gray-400">
+                        <i class="ri-image-line text-2xl"></i>
+                    </div>
+
+                    <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm">
+                        Choose Logo
+                    </button>
+                </div>
+
+                <span class="inline-block mt-2 text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">
+                    Max size 500KB
+                </span>
+            </div>
+
+            <!-- Bank Name -->
+            <div class="mb-3">
+                <label class="text-xs font-semibold text-indigo-600">
+                    Bank Name*
+                </label>
+                <input type="text"
+                       placeholder="Your Bank Name"
+                       class="w-full mt-1 px-4 py-2 border border-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500">
+            </div>
+
+            <!-- Bank Address -->
+            <div class="mb-3">
+                <label class="text-xs font-semibold text-indigo-600">
+                    Bank / Branch Address*
+                </label>
+                <input type="text"
+                       placeholder="Bank Address"
+                       class="w-full mt-1 px-4 py-2 border border-indigo-300 rounded-xl">
+            </div>
+
+            <!-- Account Number -->
+            <div class="mb-3">
+                <label class="text-xs font-semibold text-indigo-600">
+                    Account Number*
+                </label>
+                <input type="text"
+                       placeholder="Bank Account No"
+                       class="w-full mt-1 px-4 py-2 border border-indigo-300 rounded-xl">
+            </div>
+
+            <!-- Instructions -->
+            <div class="mb-5">
+                <label class="text-xs font-semibold text-gray-500">
+                    Instructions
+                </label>
+                <textarea rows="3"
+                          placeholder="Write Instructions"
+                          class="w-full mt-1 px-4 py-2 border border-indigo-300 rounded-xl"></textarea>
+            </div>
+
+            <!-- Submit -->
+            <button
+                class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 rounded-full flex items-center justify-center gap-2">
+                <i class="ri-add-line"></i>
+                Add Bank
+            </button>
+
+        </div>
+
+        <!-- RIGHT : Bank List -->
+        <div class="bg-white rounded-xl p-6 shadow-sm lg:col-span-2">
+
+            <!-- Controls -->
+            <div class="flex justify-between items-center mb-4">
+                <div class="text-sm text-gray-600">
+                    Show
+                    <select class="border rounded px-2 py-1 mx-1">
+                        <option>10</option>
+                        <option>25</option>
+                    </select>
+                    entries
+                </div>
+
+                <div>
+                    <input type="text"
+                           placeholder="Search"
+                           class="border rounded-lg px-3 py-1 text-sm">
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-indigo-500 text-white rounded-lg">
+                            <th class="px-4 py-3 text-left rounded-l-lg">
+                                Bank Name
+                            </th>
+                            <th class="px-4 py-3 text-left">
+                                Logo
+                            </th>
+                            <th class="px-4 py-3 text-left">
+                                Account No.
+                            </th>
+                            <th class="px-4 py-3 text-left rounded-r-lg">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <td colspan="4"
+                                class="text-center py-8 text-gray-400">
+                                No data available in table
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex justify-between items-center mt-4 text-sm text-gray-600">
+                <span>Showing 0 to 0 of 0 entries</span>
+                <div class="space-x-2">
+                    <button class="px-3 py-1 border rounded text-gray-400">
+                        Previous
+                    </button>
+                    <button class="px-3 py-1 border rounded text-indigo-600">
+                        Next
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

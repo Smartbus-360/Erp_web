@@ -1,0 +1,148 @@
+{% extends "base/layout.html" %}
+{% block content %}
+{% load static %}
+{% load core_extras %}
+
+<div class="content-wrapper max-w-5xl">
+
+<h2 class="text-xl font-semibold mb-6">Add / Update Marks</h2>
+
+<form method="get" class="grid grid-cols-4 gap-4 mb-6">
+
+  <select name="exam_id" class="form-control" onchange="this.form.submit()">
+    <option value="">Select Exam</option>
+    {% for e in exams %}
+      <!-- <option value="{{ e.id }}">{{ e.name }}</option> -->
+       <option value="{{ e.id }}"
+  {% if selected.exam_id == e.id|stringformat:"s" %}selected{% endif %}>
+  {{ e.name }}
+</option>
+
+    {% endfor %}
+  </select>
+
+  <select name="class_id" class="form-control" onchange="this.form.submit()">
+    <option value="">Select Class</option>
+    {% for c in classes %}
+    <option value="{{ c.id }}"
+  {% if selected.class_id == c.id|stringformat:"s" %}selected{% endif %}>
+  {{ c.name }}
+</option>
+
+    {% endfor %}
+  </select>
+
+  <!-- <select name="section_id" class="form-control" onchange="this.form.submit()"> -->
+    <!-- <select name="section_id"
+        class="form-control"
+        {% if not selected.class_id %}disabled{% endif %}
+        onchange="this.form.submit()">
+    <option value="">Select Section</option>
+    {% for s in sections %}
+<option value="{{ s.id }}"
+  {% if selected.subject_id == s.id|stringformat:"s" %}selected{% endif %}>
+  {{ s.name }}
+</option>
+  
+
+    {% endfor %}
+  </select> -->
+<select name="subject_id"
+        class="form-control"
+        {% if not selected.exam_id %}disabled{% endif %}
+        onchange="this.form.submit()">
+
+  <option value="">Select Subject</option>
+
+  {% for s in subjects %}
+    <option value="{{ s.id }}"
+      {% if selected.subject_id == s.id|stringformat:"s" %}selected{% endif %}>
+      {{ s.name }}
+    </option>
+  {% endfor %}
+</select>
+
+
+
+  <!-- <select name="subject_id" class="form-control" onchange="this.form.submit()"> -->
+<select name="section_id"
+        class="form-control"
+        {% if not selected.class_id %}disabled{% endif %}
+        onchange="this.form.submit()">
+
+  <option value="">Select Section</option>
+
+  {% for s in sections %}
+    <option value="{{ s.id }}"
+      {% if selected.section_id == s.id|stringformat:"s" %}selected{% endif %}>
+      {{ s.name }}
+    </option>
+  {% endfor %}
+</select>
+
+
+</form>
+
+{% if students %}
+
+<table class="table w-full">
+  <thead>
+    <tr>
+      <th>Roll</th>
+      <th>Name</th>
+      <th>Marks</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+
+{% for s in students %}
+<tr>
+  <td>{{ s.roll_no }}</td>
+  <td>{{ s.name }}</td>
+
+  <td>
+    <input type="number"
+           value="{{ marks_map|get_item:s.id }}"
+           id="marks_{{ s.id }}"
+           class="form-control w-32">
+  </td>
+
+  <td>
+    <button
+      onclick="saveMarks({{ s.id }})"
+      class="btn btn-sm btn-primary">
+      Save
+    </button>
+  </td>
+</tr>
+{% endfor %}
+
+  </tbody>
+</table>
+
+{% else %}
+<p class="text-gray-500">Select all filters to load students.</p>
+{% endif %}
+
+</div>
+
+<script>
+function saveMarks(studentId) {
+  fetch("/exams/marks/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": "{{ csrf_token }}"
+    },
+    body: JSON.stringify({
+      exam_id: "{{ request.GET.exam_id }}",
+      student_id: studentId,
+      subject_id: "{{ request.GET.subject_id }}",
+      marks: document.getElementById("marks_" + studentId).value
+    })
+  }).then(() => alert("Marks saved"));
+}
+</script>
+
+{% endblock %}

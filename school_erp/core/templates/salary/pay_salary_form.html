@@ -1,0 +1,136 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-bar">
+        <span class="text-muted">Salary</span>
+        <span class="mx-2">|</span>
+        <span class="fw-semibold">Pay Salary</span>
+    </div>
+
+    <!-- Salary Card -->
+    <div class="card max-w-4xl mx-auto mt-10 p-10">
+
+        <h2 class="text-xl font-semibold text-center mb-6">
+            Pay Employee Salary
+        </h2>
+
+        <!-- Employee Info -->
+<div class="mb-6 text-center">
+    <h3 class="text-lg font-semibold" id="empName">Loading...</h3>
+    <p class="text-sm text-gray-500" id="empType"></p>
+    <input type="hidden" id="employee_id" value="{{ employee_id }}">
+
+</div>
+
+        <!-- Salary Inputs -->
+        <div class="grid grid-cols-2 gap-6">
+
+            <div>
+                <label class="form-label">Salary Month<span class="required">*</span></label>
+<input type="month" id="month" class="form-control" required>
+            </div>
+
+            <div>
+                <label class="form-label">Date<span class="required">*</span></label>
+                <input type="date" id="date" class="form-control" required>
+            </div>
+
+            <div>
+                <label class="form-label">Fixed Salary<span class="required">*</span></label>
+<input type="number" id="amount" class="form-control">
+            </div>
+
+            <!-- <div>
+                <label class="form-label">Any Bonus</label>
+            <input type="number" id="bonus" class="form-control">
+
+            </div>
+
+            <div>
+                <label class="form-label">Any Deduction</label>
+<input type="number" id="deduction" class="form-control">
+            </div> -->
+
+        </div>
+
+        <!-- Submit -->
+        <div class="text-center mt-8">
+            <button class="btn btn-submit px-10" onclick="submitSalary()">
+    <i class="ri-check-line"></i>
+    Submit Salary
+</button>
+
+            </button>
+        </div>
+
+    </div>
+
+</div>
+<script>
+const empId = "{{ employee_id }}";
+
+async function loadEmployee() {
+    const res = await fetch(
+        `https://erp.backend.smartbus360.com/employees/${empId}`,
+        {
+            headers: {
+Authorization: "Bearer " + window.ACCESS_TOKEN
+
+ }
+        }
+    );
+    const emp = await res.json();
+
+    document.getElementById("empName").innerText = emp.name;
+    document.getElementById("empType").innerText = emp.designation;
+}
+
+document.addEventListener("DOMContentLoaded", loadEmployee);
+async function submitSalary() {
+    const employeeId = Number(
+        document.getElementById("employee_id").value
+    );
+
+    if (!employeeId || employeeId <= 0) {
+        alert("Invalid employee selected");
+        return;
+    }
+
+    const payload = {
+        employee_id: employeeId,
+        month: document.getElementById("month").value,
+        amount: Number(document.getElementById("amount").value),
+        payment_date: document.getElementById("date").value,
+        payment_mode: "cash"
+    };
+
+    console.log("SALARY PAYLOAD:", payload);
+
+    const res = await fetch("https://erp.backend.smartbus360.com/salary/pay", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + window.ACCESS_TOKEN
+        },
+        body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+        alert(data.detail || "Salary payment failed");
+        return;
+    }
+
+    alert("Salary paid successfully");
+    window.location.href = `/salary-slip/?payment_id=${data.payment_id}`;
+}
+
+</script>
+
+{% endblock %}

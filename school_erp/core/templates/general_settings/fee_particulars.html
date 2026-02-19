@@ -1,0 +1,452 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<!-- Breadcrumb -->
+<div class="mb-6 flex items-center justify-between">
+    <div class="flex items-center gap-2 text-sm text-gray-500">
+        <span class="font-medium text-gray-700">Settings</span>
+        <span>/</span>
+        <span>Change Fee Particulars</span>
+    </div>
+
+    <button class="flex items-center gap-2 bg-gray-900 text-white text-sm px-4 py-2 rounded-full">
+        <i class="ri-refresh-line"></i>
+        Reset To Default
+    </button>
+</div>
+
+<!-- Title -->
+<h2 class="text-2xl font-semibold text-center mb-6">
+    Change Fee Structure
+</h2>
+
+<!-- Editable / Fixed Legend -->
+<div class="flex justify-center gap-6 mb-6 text-sm">
+    <div class="flex items-center gap-2">
+        <span class="w-3 h-3 bg-indigo-500 rounded-full"></span> Editable
+    </div>
+    <div class="flex items-center gap-2">
+        <span class="w-3 h-3 bg-gray-400 rounded-full"></span> Fixed
+    </div>
+</div>
+
+<!-- Fee For -->
+<div class="max-w-3xl mx-auto mb-8">
+    <label class="text-xs font-semibold bg-red-500 text-white px-3 py-1 rounded-full inline-block mb-2">
+        Fee Particulars for*
+    </label>
+
+<select id="feeScope">
+  <option value="ALL">All Students</option>
+  <option value="CLASS">Specific Class</option>
+  <option value="STUDENT">Specific Student</option>
+  
+</select>
+<div id="scopeFilters" class="mt-4 flex gap-4 justify-center"></div>
+
+
+</div>
+
+<!-- Fee Rows -->
+<div class="max-w-4xl mx-auto space-y-4">
+
+    <!-- Row -->
+{% for item in fee_items %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+        <label class="text-xs bg-indigo-500 text-white px-3 py-1 rounded-full">
+            Particular Label*
+        </label>
+        <input type="text"
+               value="{{ item }}"
+               class="w-full px-5 py-3 border rounded-full bg-gray-50"
+               disabled>
+    </div>
+
+    <div>
+        <label class="text-xs bg-indigo-500 text-white px-3 py-1 rounded-full">
+            Prefix Amount*
+        </label>
+        <input type="number"
+               data-fee="{{ item }}"
+               class="fee-amount w-full px-5 py-3 border rounded-full">
+    </div>
+</div>
+{% endfor %}
+
+</div>
+<div class="text-center mt-6">
+    <button id="saveFeeBtn"
+            class="bg-yellow-400 px-6 py-2 rounded-full font-semibold">
+        Save Changes
+    </button>
+</div>
+
+<script>
+  const API_BASE = "https://erp.backend.smartbus360.com";
+
+  function authHeaders() {
+    return {
+      "Authorization": "Bearer " + window.ACCESS_TOKEN,
+      "Content-Type": "application/json"
+    };
+  }
+</script>
+
+
+<script>
+const scopeSelect = document.getElementById("feeScope");
+const scopeFilters = document.getElementById("scopeFilters");
+
+let selectedClass = null;
+let selectedSection = null;
+let selectedStudent = null;
+
+scopeSelect.addEventListener("change", handleScopeChange);
+handleScopeChange(); // initial load
+
+/* ---------------- SCOPE CHANGE ---------------- */
+async function handleScopeChange() {
+    scopeFilters.innerHTML = "";
+    selectedClass = selectedSection = selectedStudent = null;
+
+    if (scopeSelect.value === "CLASS") {
+        await renderClassAndSection();
+    }
+    else if (scopeSelect.value === "STUDENT") {
+        renderStudentSearch();
+    }
+
+    loadFeeData();
+}
+async function loadClasses() {
+  const res = await fetch(API_BASE + "/classes/", {
+    headers: authHeaders()
+  });
+  const data = await res.json();
+
+  const cls = document.getElementById("classSelect");
+  cls.innerHTML = `<option value="">Select Class</option>`;
+
+  data.forEach(c => {
+    cls.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+  });
+}
+
+/* ---------------- CLASS + SECTION ---------------- */
+// 
+// async function renderClassAndSection() {
+//     scopeFilters.innerHTML = `
+//         <select id="classSelect" class="px-5 py-2 rounded-full border">
+//             <option value="">Select Class</option>
+//         </select>
+
+//         <select id="sectionSelect" class="px-5 py-2 rounded-full border">
+//             <option value="">Select Section</option>
+//         </select>
+//     `;
+
+//     await loadClasses();
+
+//     const classSelect = document.getElementById("classSelect");
+//     const sectionSelect = document.getElementById("sectionSelect");
+
+//     classSelect.addEventListener("change", () => {
+//         selectedClass = classSelect.value || null;
+//         selectedSection = null;
+//         loadSections(selectedClass);
+//         loadFeeData();
+//     });
+
+//     sectionSelect.addEventListener("change", () => {
+//         selectedSection = sectionSelect.value || null;
+//         loadFeeData();
+//     });
+// }
+
+async function renderClassAndSection() {
+    scopeFilters.innerHTML = `
+        <select id="classSelect" class="px-5 py-2 rounded-full border">
+            <option value="">Select Class</option>
+        </select>
+
+        <select id="sectionSelect" class="px-5 py-2 rounded-full border">
+            <option value="">Select Section</option>
+        </select>
+    `;
+
+    const classSelect = document.getElementById("classSelect");
+    const sectionSelect = document.getElementById("sectionSelect");
+
+    // load classes
+    const res = await fetch(API_BASE + "/classes/", { headers: authHeaders() });
+    const classes = await res.json();
+
+    classes.forEach(c => {
+        classSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+    });
+
+    classSelect.addEventListener("change", async () => {
+        selectedClass = classSelect.value || null;
+        selectedSection = null;
+
+        sectionSelect.innerHTML = `<option value="">Select Section</option>`;
+
+        if (!selectedClass) return;
+
+        const res = await fetch(
+            API_BASE + "/sections/?class_id=" + selectedClass,
+            { headers: authHeaders() }
+        );
+        const sections = await res.json();
+
+        sections.forEach(s => {
+            sectionSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+        });
+
+        loadFeeData();
+    });
+
+    sectionSelect.addEventListener("change", () => {
+        selectedSection = sectionSelect.value || null;
+        loadFeeData();
+    });
+}
+
+async function loadSections(classId) {
+  if (!classId) return;
+
+  const res = await fetch(
+    API_BASE + "/sections/?class_id=" + classId,
+    { headers: authHeaders() }
+  );
+  const data = await res.json();
+
+  const sec = document.getElementById("sectionSelect");
+  sec.innerHTML = `<option value="">Select Section</option>`;
+
+  data.forEach(s => {
+    sec.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+  });
+}
+
+/* ---------------- STUDENT SEARCH BAR ---------------- */
+// function renderStudentSearch() {
+//     scopeFilters.innerHTML = `
+// const studentSearch = document.getElementById("studentSearch");
+// const studentResults = document.getElementById("studentResults");
+
+//         <div class="relative">
+//             <input
+//                 id="studentSearch"
+//                 placeholder="Search Student"
+//                 class="px-6 py-2 rounded-full border w-72 focus:ring-2 focus:ring-indigo-400 outline-none"
+//             >
+//             <div id="studentResults"
+//                  class="absolute z-10 bg-white border rounded-xl shadow mt-2 w-full hidden">
+//             </div>
+//         </div>
+//     `;
+
+//     studentSearch.addEventListener("input", debounce(searchStudent, 400));
+// }
+
+function renderStudentSearch() {
+    scopeFilters.innerHTML = `
+        <div class="relative">
+            <input id="studentSearch"
+                   placeholder="Search Student"
+                   class="px-6 py-2 rounded-full border w-72">
+            <div id="studentResults"
+                 class="absolute bg-white border rounded-xl shadow mt-2 w-full hidden">
+            </div>
+        </div>
+    `;
+
+    const studentSearch = document.getElementById("studentSearch");
+    const studentResults = document.getElementById("studentResults");
+
+    studentSearch.addEventListener("input", debounce(async (e) => {
+        const q = e.target.value.trim();
+        if (!q) {
+            studentResults.classList.add("hidden");
+            return;
+        }
+
+        const res = await fetch(
+            API_BASE + `/students/search?q=${q}`,
+            { headers: authHeaders() }
+        );
+        const students = await res.json();
+
+        studentResults.innerHTML = students.map(s => `
+            <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                 onclick="selectStudent(${s.id}, '${s.name}', ${s.class_id}, ${s.section_id})">
+                ${s.name} (${s.registration_no}) - ${s.class}-${s.section}
+            </div>
+        `).join("");
+
+        studentResults.classList.remove("hidden");
+    }, 300));
+}
+
+/* ---------------- STUDENT AUTOCOMPLETE ---------------- */
+async function searchStudent(e) {
+    const q = e.target.value.trim();
+    if (!q) {
+        studentResults.classList.add("hidden");
+        return;
+    }
+
+    const res = await fetch(API_BASE + `/students/search?q=${q}`, {
+  headers: authHeaders()
+});
+    const students = await res.json();
+
+    studentResults.innerHTML = students.map(s => `
+        <div
+            class="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+            onclick="selectStudent(${s.id}, '${s.name} (${s.registration_no})')">
+${s.name} (${s.registration_no}) - ${s.class}-${s.section}
+
+        </div>
+    `).join("");
+
+    studentResults.classList.remove("hidden");
+}
+
+function selectStudent(id, label, classId, sectionId) {
+    selectedStudent = id;
+    selectedClass = classId;
+    selectedSection = sectionId;
+
+    document.getElementById("studentSearch").value = label;
+    document.getElementById("studentResults").classList.add("hidden");
+
+    loadFeeData();
+}
+
+
+/* ---------------- LOAD FEES ---------------- */
+// async function loadFeeData() {
+//     const params = new URLSearchParams({ scope: scopeSelect.value });
+
+//     if (scopeSelect.value === "CLASS") {
+//         if (selectedClass) params.append("class_id", selectedClass);
+//         if (selectedSection) params.append("section_id", selectedSection);
+//     }
+
+//     if (scopeSelect.value === "STUDENT" && selectedStudent) {
+//         params.append("student_id", selectedStudent);
+//     }
+
+//     const res = await fetch(`${API_BASE}/fees/structure/by-scope?${params}`, { headers: auth() });
+//     const data = await res.json();
+
+//     document.querySelectorAll(".fee-amount").forEach(input => {
+//         const fee = data.find(f => f.fee_name === input.dataset.fee);
+//         input.value = fee ? fee.amount : 0;
+//     });
+// }
+
+async function loadFeeData() {
+    const params = new URLSearchParams({ scope: scopeSelect.value });
+
+    if (scopeSelect.value === "CLASS" && selectedClass) {
+        params.append("class_id", selectedClass);
+        if (selectedSection) params.append("section_id", selectedSection);
+    }
+
+    if (scopeSelect.value === "STUDENT" && selectedStudent) {
+        params.append("student_id", selectedStudent);
+    }
+
+    const res = await fetch(
+        API_BASE + `/fees/structure/by-scope?${params}`,
+        { headers: authHeaders() }
+    );
+
+    const data = await res.json();
+
+    document.querySelectorAll(".fee-amount").forEach(input => {
+        const found = data.find(f => f.fee_name === input.dataset.fee);
+        input.value = found ? found.amount : 0;
+    });
+}
+
+/* ---------------- HELPERS ---------------- */
+function auth() {
+    return { Authorization: "Bearer " + window.ACCESS_TOKEN
+
+ };
+}
+
+function debounce(fn, delay) {
+    let t;
+    return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), delay);
+    };
+}
+</script>
+<script>
+document.getElementById("saveFeeBtn").addEventListener("click", async () => {
+
+    if (scopeSelect.value === "STUDENT" && !selectedClass) {
+    alert("Student class not detected");
+    return;
+}
+
+    if (scopeSelect.value === "CLASS" && !selectedClass) {
+    alert("Select class first");
+    return;
+}
+if (scopeSelect.value === "STUDENT" && !selectedStudent) {
+    alert("Select student first");
+    return;
+}
+
+    const fees = [];
+    document.querySelectorAll(".fee-amount").forEach(input => {
+        fees.push({
+            fee_name: input.dataset.fee,
+            amount: parseFloat(input.value || 0)
+        });
+    });
+
+    const payload = {
+        scope: scopeSelect.value,
+        fees
+    };
+
+    if (scopeSelect.value === "CLASS") {
+        payload.class_id = selectedClass;
+        payload.section_id = selectedSection;
+    }
+
+    // if (scopeSelect.value === "STUDENT") {
+    //     payload.student_id = selectedStudent;
+    // }
+    if (scopeSelect.value === "STUDENT") {
+    payload.student_id = selectedStudent;
+    payload.class_id = selectedClass;     // ✅ REQUIRED
+    payload.section_id = selectedSection; // optional
+}
+
+
+    const res = await fetch(API_BASE + "/fees/structure/save", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+Authorization: "Bearer " + window.ACCESS_TOKEN
+
+        },
+        body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    alert(data.message || "Saved");
+});
+</script>
+
+{% endblock %}

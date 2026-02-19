@@ -1,0 +1,115 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<h2 class="text-xl font-semibold mb-6">Teacher Timetable</h2>
+
+<!-- Controls -->
+<div class="flex gap-4 mb-6">
+    <select id="teacherSelect" class="border rounded px-3 py-2 w-64"></select>
+    <button onclick="exportTeacherTimetable()"
+        class="bg-green-600 text-white px-4 py-2 rounded">
+        Export / Print
+    </button>
+</div>
+
+<h3 id="teacherInfo" class="font-medium mb-3"></h3>
+
+<!-- Timetable Grid -->
+<div class="overflow-auto">
+    <table class="border-collapse border w-full text-sm">
+        <thead id="periodHeader"></thead>
+        <tbody id="timetableBody"></tbody>
+    </table>
+</div>
+
+{% block page_js %}
+<script>
+let weekdays = [];
+let periods = [];
+
+async function init() {
+    await loadTeachers();
+    weekdays = await fetchData("/weekdays/");
+    periods = await fetchData("/periods/");
+}
+
+async function loadTeachers() {
+    const teachers = await fetchData("/employees/");
+    teacherSelect.innerHTML = `<option value="">Select Teacher</option>`;
+    teachers.forEach(t => {
+        teacherSelect.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+    });
+}
+
+teacherSelect.onchange = loadTeacherTimetable;
+
+async function loadTeacherTimetable() {
+    const teacherId = teacherSelect.value;
+    if (!teacherId) return;
+
+    const timetable = await fetchData(`/timetable/?teacher_id=${teacherId}`);
+    document.getElementById("teacherInfo").innerText =
+        `Teacher: ${teacherSelect.options[teacherSelect.selectedIndex].text}`;
+
+    renderGrid(timetable);
+}
+
+function renderGrid(timetable) {
+    // Header
+    periodHeader.innerHTML = `
+        <tr>
+            <th class="border px-2 py-1">Day</th>
+            ${periods.map(p => `<th class="border px-2 py-1">${p.name}</th>`).join("")}
+        </tr>
+    `;
+
+    timetableBody.innerHTML = "";
+
+    weekdays.forEach(wd => {
+        let row = `<tr><td class="border px-2 py-1 font-medium">${wd.name}</td>`;
+
+        periods.forEach(p => {
+            const slot = timetable.find(
+                t => t.weekday_id === wd.id && t.period_no === p.order_no
+            );
+
+            row += `<td class="border px-2 py-1 ${
+                slot ? 'bg-green-50' : ''
+            }">
+                ${
+                    slot
+                        ? `<b>${slot.class_name}-${slot.section_name}</b><br>
+                           <span class="text-xs">${slot.subject_name}</span>`
+                        : "-"
+                }
+            </td>`;
+        });
+
+        row += "</tr>";
+        timetableBody.innerHTML += row;
+    });
+}
+
+function exportTeacherTimetable() {
+    const teacherId = teacherSelect.value;
+    if (!teacherId) {
+        alert("Select a teacher first");
+        return;
+    }
+    window.print();
+}
+
+async function fetchData(path) {
+    const res = await fetch(`https://erp.backend.smartbus360.com${path}`, {
+        headers: {
+Authorization: "Bearer " + window.ACCESS_TOKEN
+
+        }
+    });
+    return res.json();
+}
+
+init();
+</script>
+{% endblock %}
+{% endblock %}

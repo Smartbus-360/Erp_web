@@ -1,0 +1,233 @@
+<header class="bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950
+               shadow-lg px-6 py-3 flex items-center justify-between text-white">
+<style>
+/* AI Glow Animation */
+@keyframes aiPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(99,102,241,0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(99,102,241,0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(99,102,241,0);
+  }
+}
+
+.ai-pulse {
+  animation: aiPulse 2.5s infinite;
+}
+</style>
+
+    <!-- Left -->
+    <div class="flex items-center space-x-4">
+        <i class="ri-menu-line text-xl md:hidden"></i>
+        <i class="ri-search-line text-lg text-gray-500"></i>
+    </div>
+
+    <!-- Right -->
+<!-- Right -->
+<div class="flex items-center space-x-4">
+
+    <!-- 🤖 BIR AI BUTTON -->
+<!-- 🤖 ASK BIR AI BUTTON -->
+<button
+    onclick="openBirAI()"
+    class="relative flex items-center gap-2 px-5 py-2 rounded-full
+           text-white text-xs font-semibold
+           bg-[radial-gradient(circle_at_20%_20%,#6366f1,transparent_40%),linear-gradient(135deg,#0f172a,#312e81,#701a75)]
+           border border-indigo-400/40
+           shadow-[0_0_20px_rgba(99,102,241,0.45)]
+           hover:shadow-[0_0_30px_rgba(168,85,247,0.65)]
+           hover:scale-[1.06]
+           transition-all duration-300 ai-pulse overflow-hidden">
+
+    <!-- Animated shimmer -->
+    <span class="absolute inset-0 bg-gradient-to-r
+                 from-transparent via-white/20 to-transparent
+                 translate-x-[-100%] hover:translate-x-[100%]
+                 transition-transform duration-700"></span>
+
+    <!-- AI Icon -->
+    <i class="ri-robot-2-line text-sm"></i>
+
+    <!-- Text -->
+    <span class="relative z-10 tracking-wide">
+        Ask Bir AI
+    </span>
+
+    <!-- Live Dot -->
+    <span class="absolute -top-1 -right-1 w-2.5 h-2.5
+                 bg-green-400 rounded-full
+                 border-2 border-[#0f172a]
+                 animate-pulse"></span>
+</button>
+
+
+    <!-- App Store -->
+    <button class="bg-blue-500 text-white text-xs px-3 py-1 rounded-full">
+        App Store
+    </button>
+
+    <!-- Google Play -->
+    <button class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full">
+        Google Play
+    </button>
+
+
+
+        <div class="flex items-center space-x-2 cursor-pointer">
+            <i class="ri-bank-line text-xl text-blue-500"></i>
+<span id="header_institute_name"
+      class="text-sm font-medium max-w-[160px] truncate text-right">
+    Loading...
+</span>
+
+<!-- Notification Wrapper -->
+<div class="relative">
+
+    <!-- Bell Icon -->
+    <i class="ri-notification-3-line text-xl cursor-pointer"
+       onclick="toggleNotifications()"></i>
+
+    <!-- Badge -->
+    <span id="notifCount"
+          class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs
+                 w-5 h-5 flex items-center justify-center rounded-full">
+        0
+    </span>
+
+    <!-- Dropdown -->
+    <div id="notifDropdown"
+         class="hidden absolute right-0 mt-3 w-80 bg-white shadow-lg rounded-lg z-50">
+
+        <div class="p-3 border-b font-semibold">Notifications</div>
+
+        <div id="notifList" class="max-h-64 overflow-y-auto">
+            <p class="p-3 text-sm text-gray-500">Loading...</p>
+        </div>
+
+        <a href="/notifications/"
+           class="block text-center text-blue-500 text-sm py-2 border-t">
+            View all
+        </a>
+    </div>
+</div>
+
+</div>
+
+    </div>
+</header>
+<script>
+async function loadInstituteNameInHeader() {
+    const token = window.ACCESS_TOKEN;
+    if (!token) return;
+
+    // 1️⃣ Get logged-in user
+    const userRes = await fetch("https://erp.backend.smartbus360.com/auth/me", {
+        headers: {
+            Authorization: "Bearer " + token
+        }
+    });
+
+    if (!userRes.ok) return;
+    const user = await userRes.json();
+
+    if (!user.institute_id) return;
+
+    // 2️⃣ Get institute details
+    const instRes = await fetch(
+        `https://erp.backend.smartbus360.com/institutes/${user.institute_id}`,
+        {
+            headers: {
+                Authorization: "Bearer " + token
+            }
+        }
+    );
+
+    if (!instRes.ok) return;
+    const institute = await instRes.json();
+
+    // 3️⃣ Update header
+    const el = document.getElementById("header_institute_name");
+    if (el) {
+        el.innerText = institute.name || "Institute";
+    }
+}
+
+// 🚀 Auto-load
+document.addEventListener("DOMContentLoaded", loadInstituteNameInHeader);
+</script>
+
+<script>
+function toggleNotifications() {
+    const dropdown = document.getElementById("notifDropdown");
+    dropdown.classList.toggle("hidden");
+
+    // Reload when opened
+    if (!dropdown.classList.contains("hidden")) {
+        loadNotifications();
+    }
+}
+
+async function loadNotifications() {
+    const token = window.ACCESS_TOKEN;
+    if (!token) return;
+
+    const res = await fetch("https://erp.backend.smartbus360.com/notifications/unread", {
+        headers: {
+            Authorization: "Bearer " + token
+        }
+    });
+
+    if (!res.ok) {
+        console.error("Notifications API failed");
+        return;
+    }
+
+    const data = await res.json();
+
+    const badge = document.getElementById("notifCount");
+    const list = document.getElementById("notifList");
+
+    // Badge
+    if (data.length > 0) {
+        badge.innerText = data.length;
+        badge.classList.remove("hidden");
+    } else {
+        badge.classList.add("hidden");
+    }
+
+    // List
+    list.innerHTML = "";
+
+    if (data.length === 0) {
+        list.innerHTML = `
+            <p class="p-3 text-sm text-gray-500">
+                No new notifications
+            </p>`;
+        return;
+    }
+
+    data.forEach(n => {
+        list.innerHTML += `
+            <div class="p-3 border-b text-sm">
+                <p class="font-medium">${n.title}</p>
+                <p class="text-gray-500">${n.message}</p>
+            </div>
+        `;
+    });
+}
+
+document.addEventListener("DOMContentLoaded", loadNotifications);
+</script>
+<script>
+function openBirAI() {
+    // For now – placeholder
+    alert("🤖 BIR AI is coming soon!");
+
+    // Later you can:
+    // window.location.href = "/bir-ai/";
+    // OR open chatbot modal
+}
+</script>

@@ -1,0 +1,49 @@
+{% extends "base/layout.html" %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-bar">
+        <span class="text-muted">Attendance</span>
+        <span class="mx-2">|</span>
+        <span class="fw-semibold">Mark or Update Employees Attendance</span>
+    </div>
+
+    <!-- Card -->
+    <div class="card max-w-xl mx-auto mt-10 p-8">
+
+        <!-- Tabs -->
+        <div class="flex gap-3 mb-6">
+            <button class="btn-outline-active">Manual Attendance</button>
+            <button class="btn-outline">Card Scanning</button>
+        </div>
+
+        <h2 class="text-lg font-semibold text-center mb-6">
+            Add / Update Attendance
+        </h2>
+
+        <!-- Form -->
+        <form action="{% url 'core:employees_attendance_sheet' %}" method="get">
+
+            <!-- Date -->
+            <div class="form-group mb-6">
+                <label class="form-label">Date<span class="required">*</span></label>
+                <input type="date" class="form-control" required>
+            </div>
+
+            <!-- Submit -->
+            <div class="text-center">
+                <button class="btn btn-submit px-10">
+                    ✓ Submit
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

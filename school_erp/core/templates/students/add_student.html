@@ -1,0 +1,941 @@
+<style>
+.input-ui {
+  width: 100%;
+  margin-top: 6px;
+  padding: 12px 14px;
+  background: #f9fafb;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  font-size: 14px;
+  transition: all .15s ease;
+}
+
+.input-ui:focus {
+  background: white;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 4px rgba(99,102,241,.12);
+}
+
+.input-ui::placeholder {
+  color: #9ca3af;
+}
+
+.input-ui-file {
+  background: #f9fafb;
+  border-radius: 14px;
+  padding: 10px;
+}
+
+.input-ui-textarea {
+  background: #f9fafb;
+  border-radius: 14px;
+  padding: 12px;
+  border: 1px solid transparent;
+}
+
+.input-ui-textarea:focus {
+  background: white;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 4px rgba(99,102,241,.12);
+}
+/* ================= AI MICRO ANIMATIONS ================= */
+
+/* Input focus lift (AI feel) */
+.input-ui,
+.input-ui-textarea {
+  transition:
+    box-shadow .25s ease,
+    border-color .25s ease,
+    transform .18s ease,
+    background .25s ease;
+}
+
+.input-ui:focus,
+.input-ui-textarea:focus {
+  transform: translateY(-1px) scale(1.01);
+}
+
+/* Section fade-in */
+.form-section {
+  animation: fadeSlideIn .45s ease both;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Button hover (AI pulse) */
+button {
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(99,102,241,.18);
+}
+
+button:active {
+  transform: scale(.97);
+}
+
+/* Progress bar smooth */
+#formProgress {
+  transition: width .35s cubic-bezier(.4,0,.2,1);
+}
+
+/* Modal pop animation */
+#customizeModal > div {
+  animation: popIn .25s ease;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(.96) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+</style>
+
+
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="p-6 space-y-8 bg-gray-100">
+
+    <!-- PAGE HEADER -->
+    <div class="flex items-center gap-2 text-sm text-gray-500">
+        <span class="font-semibold text-gray-800">Students</span>
+        <span>›</span>
+        <span>Admission Form</span>
+    </div>
+    
+    <div class="bg-white rounded-lg p-4 flex items-center gap-4">
+  <div class="flex-1">
+    <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+      <div id="formProgress"
+           class="h-2 bg-indigo-500 transition-all"
+           style="width: 0%">
+      </div>
+    </div>
+    <p class="text-xs text-gray-500 mt-1">
+      Admission progress
+    </p>
+  </div>
+</div>
+
+
+    <!-- TITLE -->
+    <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-semibold">Admission Form</h2>
+        <div class="flex gap-3">
+<button onclick="openCustomize()"
+        class="px-4 py-2 rounded-full bg-pink-500 text-white text-sm">
+    Customize
+</button>
+            <button class="px-4 py-2 rounded-full bg-indigo-500 text-white text-sm">Import Students</button>
+        </div>
+    </div>
+
+    <!-- ================= STUDENT INFORMATION ================= -->
+<div class="bg-white rounded-2xl border border-gray-100 p-6 form-section">
+<div class="flex items-center justify-between mb-4">
+  <h3 class="text-base font-semibold text-gray-900">
+    Student Information
+  </h3>
+  <span class="text-xs text-gray-400">
+    Required
+  </span>
+</div>
+
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            <div data-field="name">
+<label class="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+  Student Name
+</label>
+<input id="name" class="input-ui" placeholder="Name of Student">
+            </div>
+
+            <div data-field="admission_no">
+                <label class="text-sm font-medium">Registration No</label>
+<input id="admission_no" class="input-ui" placeholder="Registration No">
+            </div>
+
+            <div data-field="class_name">
+                <label class="text-sm font-medium">Select Class *</label>
+               <select id="class_name" class="input-ui">
+    <option value="">Select Class</option>
+</select>
+
+<select id="section" class="input-ui">
+    <option value="">Select Section *</option>
+</select>
+
+            </div>
+
+            <div>
+                <label class="text-sm font-medium">Picture (Optional)</label>
+                <input type="file" class="input-ui-file">
+                <span class="text-xs text-orange-500">Max size 100KB</span>
+            </div>
+
+            <div data-field="admission_date">
+                <label class="text-sm font-medium">Date of Admission *</label>
+<input id="admission_date" type="date" class="input-ui">
+            </div>
+
+            <div data-field="discount_percent">
+                <label class="text-sm font-medium">Discount in Fee (%)</label>
+<input id="discount_percent" type="number" class="input-ui" placeholder="Discount in %">
+            </div>
+
+            <div data-field="mobile">
+                <label class="text-sm font-medium">Mobile No (SMS / WhatsApp)</label>
+<input id="mobile" class="input-ui" placeholder="Mobile No (SMS / WhatsApp)">
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= OTHER INFORMATION ================= -->
+<div class="bg-white rounded-2xl border border-gray-100 p-6 form-section">
+        <h3 class="text-lg font-semibold mb-4">
+            2. Other Information
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            <div data-field="dob">
+                <label class="text-sm font-medium">Date of Birth</label>
+                <input id="dob" type="date" class="input-ui">
+            </div>
+
+            <div data-field="birth_form_id">
+                <label class="text-sm font-medium">Birth Form ID / NIC</label>
+                <input  id="birth_form_id" class="input-ui">
+            </div>
+
+            <div data-field="orphan">
+                <label class="text-sm font-medium">Orphan Student</label>
+<select id="orphan" class="input-ui">
+    <option value="">Select</option>
+    <option value="yes">Yes</option>
+    <option value="no">No</option>
+</select>
+            </div>
+
+            <div data-field="gender">
+                <label class="text-sm font-medium">Gender</label>
+<select id="gender" class="input-ui">
+    <option value="">Select</option>
+    <option value="male">Male</option>
+    <option value="female">Female</option>
+    <option value="other">Other</option>
+</select>            </div>
+
+            <div data-field="caste">
+                <label class="text-sm font-medium">Caste</label>
+<select id="caste" class="input-ui">
+    <option value="">Select</option>
+    <option value="General">General</option>
+    <option value="OBC">OBC</option>
+    <option value="SC">SC</option>
+    <option value="ST">ST</option>
+    <option value="EWS">EWS</option>
+    <option value="Other">Other</option>
+</select>
+            </div>
+
+            <div data-field="osc">
+                <label class="text-sm font-medium">OSC</label>
+<select id="osc" class="input-ui">
+    <option value="">Select</option>
+    <option value="yes">Yes</option>
+    <option value="no">No</option>
+</select>
+            </div>
+
+            <div data-field="identification_mark">
+                <label class="text-sm font-medium">Identification Mark</label>
+                <input  id="identification_mark" class="input-ui">
+            </div>
+
+            <div data-field="previous_school">
+                <label class="text-sm font-medium">Previous School</label>
+                <input id="previous_school" class="input-ui">
+            </div>
+
+            <div data-field="religion">
+                <label class="text-sm font-medium">Religion</label>
+<select id="religion" class="input-ui">
+    <option value="">Select</option>
+    <option>Hindu</option>
+    <option>Muslim</option>
+    <option>Christian</option>
+    <option>Sikh</option>
+    <option>Buddhist</option>
+    <option>Other</option>
+</select>
+            </div>
+
+            <div data-field="blood_group">
+                <label class="text-sm font-medium">Blood Group</label>
+<select id="blood_group" class="input-ui">
+    <option value="">Select</option>
+    <option>O+</option><option>O-</option>
+    <option>A+</option><option>A-</option>
+    <option>B+</option><option>B-</option>
+    <option>AB+</option><option>AB-</option>
+</select>
+            </div>
+
+            <div data-field="previous_board_roll">
+                <label class="text-sm font-medium">Previous Board Roll No</label>
+                <input id="previous_board_roll" class="input-ui">
+            </div>
+
+            <!-- <div>
+                <label class="text-sm font-medium">Select Family</label>
+                <select id="family"  class="input-ui"><option>Select</option></select>
+            </div> -->
+
+            <div data-field="disease">
+                <label class="text-sm font-medium">Disease (If Any)</label>
+                <input  id="disease" class="input-ui">
+            </div>
+
+            <div data-field="total_siblings">
+                <label class="text-sm font-medium">Total Siblings</label>
+                <input id="total_siblings" type="number" class="input-ui">
+            </div>
+
+            <div  data-field="address"  class="md:col-span-3">
+                <label class="text-sm font-medium">Address</label>
+                <textarea id="address" class="input-ui-textarea" rows="3"></textarea>
+            </div>
+
+            <!-- 🔹 Dynamic Custom Fields will be injected here -->
+<div id="customStudentFields"
+     class="grid grid-cols-1 md:grid-cols-3 gap-4">
+</div>
+
+        </div>
+
+        <button
+    type="button"
+    onclick="toggleParents()"
+    class="mt-4 px-4 py-2 border rounded-full text-indigo-500"
+>
+    + Add Parents
+</button>
+
+    </div>
+
+    <!-- ================= PARENT INFORMATION (HIDDEN) ================= -->
+<div id="parentSection" class="bg-white rounded-2xl border border-gray-100 p-6 form-section">
+    <h3 class="text-lg font-semibold mb-4">
+        3. Parent / Guardian Information
+    </h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <!-- Father -->
+        <div data-field="father_name">
+            <label class="text-sm font-medium">Father Name</label>
+            <input id="father_name" class="input-ui" placeholder="Father Name">
+        </div>
+
+        <div data-field="father_mobile">
+            <label class="text-sm font-medium">Father Mobile</label>
+            <input id="father_mobile" class="input-ui" placeholder="Mobile No">
+        </div>
+
+        <div data-field="father_occupation">
+            <label class="text-sm font-medium">Father Occupation</label>
+            <input id="father_occupation" class="input-ui" placeholder="Occupation">
+        </div>
+
+        <!-- Mother -->
+        <div data-field="mother_name">
+            <label class="text-sm font-medium">Mother Name</label>
+            <input id="mother_name" class="input-ui" placeholder="Mother Name">
+        </div>
+
+        <div data-field="mother_mobile">
+            <label class="text-sm font-medium">Mother Mobile</label>
+            <input id="mother_mobile" class="input-ui" placeholder="Mobile No">
+        </div>
+
+        <div data-field="mother_occupation">
+            <label class="text-sm font-medium">Mother Occupation</label>
+            <input id="mother_occupation" class="input-ui" placeholder="Occupation">
+        </div>
+
+        <!-- Guardian -->
+        <div data-field="guardian_name">
+            <label class="text-sm font-medium">Guardian Name</label>
+            <input id="guardian_name" class="input-ui" placeholder="Guardian Name">
+        </div>
+
+        <div data-field="guardian_relation">
+            <label class="text-sm font-medium">Relation</label>
+            <input  id="guardian_relation" class="input-ui" placeholder="Relation">
+        </div>
+
+        <div data-field="guardian_mobile">
+            <label class="text-sm font-medium">Guardian Mobile</label>
+            <input id="guardian_mobile" class="input-ui" placeholder="Mobile No">
+        </div>
+
+    </div>
+</div>
+
+
+    <!-- ================= ACTION BUTTONS ================= -->
+    <div class="flex justify-end gap-4">
+        <button class="px-6 py-2 rounded-full border">Reset</button>
+        <button
+    type="button"
+    onclick="submitStudent()"
+    class="px-6 py-2 rounded-full bg-indigo-500 text-white">
+    Submit
+</button>
+
+    </div>
+
+    <!-- ================= CUSTOMIZE MODAL ================= -->
+<!-- <div id="customizeModal"
+     class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+
+    <div class="bg-white w-full max-w-md rounded-xl p-6 space-y-4">
+
+        <h3 class="text-lg font-semibold">Customize Admission Form</h3>
+
+        <div class="space-y-2 text-sm">
+            <label><input type="checkbox" id="cfg_dob"> Date of Birth</label><br>
+            <label><input type="checkbox" id="cfg_gender"> Gender</label><br>
+            <label><input type="checkbox" id="cfg_caste"> Caste</label><br>
+            <label><input type="checkbox" id="cfg_religion"> Religion</label><br>
+            <label><input type="checkbox" id="cfg_blood_group"> Blood Group</label><br>
+            <label><input type="checkbox" id="cfg_orphan"> Orphan</label><br>
+            <label><input type="checkbox" id="cfg_osc"> OSC</label><br>
+            <label><input type="checkbox" id="cfg_parents"> Parent Details</label>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4">
+            <button onclick="closeCustomize()"
+                    class="px-4 py-2 border rounded-full">
+                Cancel
+            </button>
+
+            <button onclick="saveCustomize()"
+                    class="px-4 py-2 bg-indigo-500 text-white rounded-full">
+                Save
+            </button>
+        </div>
+
+    </div>
+</div>
+
+</div> -->
+
+<div id="customizeModal"
+     class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+
+<div class="bg-white w-full max-w-lg rounded-xl p-6 space-y-6 form-section">
+
+    <h3 class="text-lg font-semibold">Customize Admission Form</h3>
+
+    <!-- ===== SECTION A: SHOW / HIDE FIELDS ===== -->
+    <div class="border rounded-lg p-4">
+      <h4 class="font-semibold mb-2 text-sm text-gray-700">
+        Show / Hide Fields
+      </h4>
+
+      <div class="grid grid-cols-2 gap-2 text-sm">
+        <label><input type="checkbox" id="cfg_dob"> Date of Birth</label>
+        <label><input type="checkbox" id="cfg_gender"> Gender</label>
+        <label><input type="checkbox" id="cfg_caste"> Caste</label>
+        <label><input type="checkbox" id="cfg_religion"> Religion</label>
+        <label><input type="checkbox" id="cfg_blood_group"> Blood Group</label>
+        <label><input type="checkbox" id="cfg_orphan"> Orphan</label>
+        <label><input type="checkbox" id="cfg_osc"> OSC</label>
+        <label><input type="checkbox" id="cfg_parents"> Parent Details</label>
+      </div>
+    </div>
+
+    <!-- ===== SECTION B: ADD NEW CUSTOM FIELD ===== -->
+    <div class="border rounded-lg p-4">
+      <h4 class="font-semibold mb-2 text-sm text-gray-700">
+        Add New Custom Field
+      </h4>
+
+      <input id="field_label"
+             class="input-ui"
+             placeholder="Field Label (e.g. Aadhar Number)">
+
+      <input id="field_key"
+             class="input-ui mt-2"
+             placeholder="Field Key (snake_case)">
+
+      <select id="field_type" class="input-ui mt-2">
+        <option value="text">Text</option>
+        <option value="number">Number</option>
+        <option value="date">Date</option>
+      </select>
+
+      <label class="flex items-center gap-2 mt-2 text-sm">
+        <input type="checkbox" id="is_required">
+        Required
+      </label>
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div class="flex justify-end gap-3">
+      <button onclick="closeCustomize()"
+              class="px-4 py-2 border rounded-full">
+        Cancel
+      </button>
+
+      <button onclick="saveAllCustomize()"
+              class="px-4 py-2 bg-indigo-500 text-white rounded-full">
+        Save
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- INPUT STYLES -->
+<script>
+function toggleParents() {
+    const section = document.getElementById("parentSection");
+    section.classList.toggle("hidden");
+}
+</script>
+
+
+<script>
+function v(id) {
+    const el = document.getElementById(id);
+    return el ? el.value : null;
+}
+
+
+async function submitStudent() {
+const method = editStudentId ? "PUT" : "POST";
+const url = editStudentId
+    ? `https://erp.backend.smartbus360.com/students/${editStudentId}`
+    : "https://erp.backend.smartbus360.com/students/";
+
+    
+    // ✅ COLLECT CUSTOM / DYNAMIC FIELDS
+const extraFields = {};
+
+document.querySelectorAll("[data-field]").forEach(wrapper => {
+    const input = wrapper.querySelector("input, select, textarea");
+    if (!input) return;
+
+    const key = wrapper.getAttribute("data-field");
+
+    // Skip core fields (already sent separately)
+    const coreFields = [
+        "name", "admission_no", "class_name", "section",
+        "admission_date", "discount_percent", "mobile"
+    ];
+
+    if (coreFields.includes(key)) return;
+
+    if (input.value !== "") {
+        extraFields[key] = input.value;
+    }
+});
+
+
+    const payload = {
+        name: document.getElementById("name").value,
+        admission_no: document.getElementById("admission_no").value,
+        roll_no: null,
+//         class_name: document.getElementById("class_name").selectedOptions[0].text,
+// section: document.getElementById("section").value || null,
+class_id: parseInt(document.getElementById("class_name").value),
+class_name: document.getElementById("class_name").selectedOptions[0].text,
+section: document.getElementById("section").value || null,
+section_id: null, // optional, if you add later
+
+
+        dob: document.getElementById("dob").value || null,
+        gender: document.getElementById("gender").value || null,
+        admission_date: document.getElementById("admission_date").value || null,
+        discount_percent: document.getElementById("discount_percent").value || null,
+        mobile: document.getElementById("mobile").value || null,
+
+        birth_form_id: document.getElementById("birth_form_id").value || null,
+        orphan: document.getElementById("orphan").value || null,
+        caste: document.getElementById("caste").value || null,
+        osc: document.getElementById("osc").value || null,
+
+        identification_mark: document.getElementById("identification_mark").value || null,
+        previous_school: document.getElementById("previous_school").value || null,
+        religion: document.getElementById("religion").value || null,
+        blood_group: document.getElementById("blood_group").value || null,
+
+        previous_board_roll: document.getElementById("previous_board_roll").value || null,
+        // family: document.getElementById("family").value || null,
+        disease: document.getElementById("disease").value || null,
+        total_siblings: document.getElementById("total_siblings").value || null,
+        address: document.getElementById("address").value || null,
+
+        father_name: document.getElementById("father_name").value || null,
+        father_mobile: document.getElementById("father_mobile").value || null,
+        father_occupation: document.getElementById("father_occupation").value || null,
+
+        mother_name: document.getElementById("mother_name").value || null,
+        mother_mobile: document.getElementById("mother_mobile").value || null,
+        mother_occupation: document.getElementById("mother_occupation").value || null,
+
+        guardian_name: document.getElementById("guardian_name").value || null,
+        guardian_relation: document.getElementById("guardian_relation").value || null,
+        guardian_mobile: document.getElementById("guardian_mobile").value || null,
+        extra_fields: extraFields
+
+    };
+
+    const res = await fetch(url, {
+        method: method,
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + window.ACCESS_TOKEN
+        },
+        body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+        const err = await res.json();
+        alert(err.detail || "Failed to add student");
+        return;
+    }
+
+    alert("Student added successfully");
+    window.location.href = "/students/";
+}
+</script>
+<script>
+async function loadClasses() {
+    const res = await fetch("https://erp.backend.smartbus360.com/classes/", {
+        headers: {
+            "Authorization": "Bearer " + window.ACCESS_TOKEN
+        }
+    });
+
+    if (!res.ok) {
+        alert("Failed to load classes");
+        return;
+    }
+
+    const classes = await res.json();
+    const select = document.getElementById("class_name");
+
+    select.innerHTML = `<option value="">Select Class</option>`;
+
+    classes.forEach(cls => {
+        const opt = document.createElement("option");
+        opt.value = cls.id;
+        opt.textContent = cls.name;
+        select.appendChild(opt);
+    });
+}
+
+// auto-load on page load
+</script>
+<script>
+document.getElementById("class_name").addEventListener("change", loadSections);
+
+async function loadSections() {
+    const classId = document.getElementById("class_name").value;
+    const sectionSelect = document.getElementById("section");
+
+    sectionSelect.innerHTML = `<option value="">Select Section</option>`;
+
+    if (!classId) return;
+
+    const res = await fetch(
+`https://erp.backend.smartbus360.com/sections/?class_id=${classId}`,
+        { headers: { Authorization: "Bearer " + window.ACCESS_TOKEN, } }
+    );
+
+    const sections = await res.json();
+
+    sections.forEach(sec => {
+        const opt = document.createElement("option");
+        opt.value = sec.name;
+        opt.textContent = sec.name;
+        sectionSelect.appendChild(opt);
+    });
+}
+</script>
+
+<script>
+async function loadFormConfig() {
+
+    const res = await fetch(
+        "https://erp.backend.smartbus360.com/students/form-config",
+        { headers: { Authorization: "Bearer " + window.ACCESS_TOKEN, } }
+    );
+
+    const cfg = await res.json();
+
+    toggleField("dob", cfg.show_dob);
+    toggleField("gender", cfg.show_gender);
+    toggleField("caste", cfg.show_caste);
+    toggleField("religion", cfg.show_religion);
+    toggleField("blood_group", cfg.show_blood_group);
+    toggleField("orphan", cfg.show_orphan);
+    toggleField("osc", cfg.show_osc);
+    toggleField("parents", cfg.show_parents);
+}
+
+function toggleField(name, show) {
+    const el = document.querySelector(`[data-field="${name}"]`);
+    if (!el) return;
+    el.style.display = show ? "block" : "none";
+}
+
+document.addEventListener("DOMContentLoaded", loadFormConfig);
+</script>
+<script>
+function openCustomize() {
+    document.getElementById("customizeModal").classList.remove("hidden");
+}
+
+function closeCustomize() {
+    document.getElementById("customizeModal").classList.add("hidden");
+}
+function updateProgress() {
+  const fields = document.querySelectorAll("[data-field] input, [data-field] select, textarea");
+  const filled = [...fields].filter(f => f.value && f.value !== "").length;
+  const percent = Math.min(100, Math.round((filled / fields.length) * 100));
+  document.getElementById("formProgress").style.width = percent + "%";
+}
+
+document.addEventListener("input", updateProgress);
+
+</script>
+<script>
+function saveCustomize() {
+
+    toggleField("dob", document.getElementById("cfg_dob").checked);
+    toggleField("gender", document.getElementById("cfg_gender").checked);
+    toggleField("caste", document.getElementById("cfg_caste").checked);
+    toggleField("religion", document.getElementById("cfg_religion").checked);
+    toggleField("blood_group", document.getElementById("cfg_blood_group").checked);
+    toggleField("orphan", document.getElementById("cfg_orphan").checked);
+    toggleField("osc", document.getElementById("cfg_osc").checked);
+    toggleField("parents", document.getElementById("cfg_parents").checked);
+
+    closeCustomize();
+}
+
+function toggleField(name, show) {
+    const el = document.querySelector(`[data-field="${name}"]`);
+    if (!el) return;
+    el.style.display = show ? "block" : "none";
+}
+</script>
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const editStudentId = urlParams.get("id");
+</script>
+<script>
+async function loadStudentForEdit(studentId) {
+
+    const res = await fetch(`https://erp.backend.smartbus360.com/students/${studentId}`, {
+        headers: { Authorization: "Bearer " + window.ACCESS_TOKEN,
+
+ }
+    });
+
+    if (!res.ok) {
+        alert("Failed to load student");
+        return;
+    }
+
+    const s = await res.json();
+
+    // Core fields
+    document.getElementById("name").value = s.name || "";
+    document.getElementById("admission_no").value = s.admission_no || "";
+    document.getElementById("mobile").value = s.mobile || "";
+    document.getElementById("discount_percent").value = s.discount_percent || "";
+    document.getElementById("dob").value = s.dob || "";
+    document.getElementById("admission_date").value = s.admission_date || "";
+
+    // Class & section
+    document.getElementById("class_name").value = s.class_id;
+    await loadSections();
+    document.getElementById("section").value = s.section || "";
+
+    // Parents
+    document.getElementById("father_name").value = s.father_name || "";
+    document.getElementById("father_mobile").value = s.father_mobile || "";
+    document.getElementById("father_occupation").value = s.father_occupation || "";
+
+    document.getElementById("mother_name").value = s.mother_name || "";
+    document.getElementById("mother_mobile").value = s.mother_mobile || "";
+    document.getElementById("mother_occupation").value = s.mother_occupation || "";
+
+    document.getElementById("guardian_name").value = s.guardian_name || "";
+    document.getElementById("guardian_relation").value = s.guardian_relation || "";
+    document.getElementById("guardian_mobile").value = s.guardian_mobile || "";
+
+    // Extra/custom fields
+    if (s.extra_fields) {
+        Object.entries(s.extra_fields).forEach(([key, val]) => {
+            const el = document.getElementById(key);
+            if (el) el.value = val;
+        });
+    }
+
+    // Change button text
+    document.querySelector("button[onclick='submitStudent()']").innerText = "Update Student";
+}
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadClasses();
+
+    if (editStudentId) {
+        loadStudentForEdit(editStudentId);
+    }
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+
+  const res = await fetch(
+    "https://erp.backend.smartbus360.com/students/form-fields",
+    {
+      headers: {
+        Authorization: "Bearer " + window.ACCESS_TOKEN
+      }
+    }
+  );
+
+  if (!res.ok) return;
+
+  const fields = await res.json();
+  const container = document.getElementById("customStudentFields");
+
+  if (!container) {
+    console.error("customStudentFields container missing");
+    return;
+  }
+
+  fields.forEach(f => {
+    const wrapper = document.createElement("div");
+    wrapper.dataset.field = f.field_key;
+
+    const label = document.createElement("label");
+    label.className = "text-sm font-medium";
+    label.innerText = f.field_label + (f.is_required ? " *" : "");
+
+    let input;
+
+    switch (f.field_type) {
+      case "date":
+        input = document.createElement("input");
+        input.type = "date";
+        break;
+      case "number":
+        input = document.createElement("input");
+        input.type = "number";
+        break;
+      default:
+        input = document.createElement("input");
+        input.type = "text";
+    }
+
+    input.className = "input-ui";
+    input.id = f.field_key;
+
+    wrapper.appendChild(label);
+    wrapper.appendChild(input);
+    container.appendChild(wrapper);
+  });
+
+});
+</script>
+<script>
+async function saveAllCustomize() {
+
+  /* ========= PART 1: SAVE SHOW / HIDE CONFIG ========= */
+  const cfgPayload = {
+    show_dob: document.getElementById("cfg_dob").checked,
+    show_gender: document.getElementById("cfg_gender").checked,
+    show_caste: document.getElementById("cfg_caste").checked,
+    show_religion: document.getElementById("cfg_religion").checked,
+    show_blood_group: document.getElementById("cfg_blood_group").checked,
+    show_orphan: document.getElementById("cfg_orphan").checked,
+    show_osc: document.getElementById("cfg_osc").checked,
+    show_parents: document.getElementById("cfg_parents").checked
+  };
+
+  await fetch(
+    "https://erp.backend.smartbus360.com/students/form-config",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + window.ACCESS_TOKEN
+      },
+      body: JSON.stringify(cfgPayload)
+    }
+  );
+
+  /* ========= PART 2: ADD NEW FIELD (OPTIONAL) ========= */
+  const label = document.getElementById("field_label").value.trim();
+  const key = document.getElementById("field_key").value.trim();
+
+  if (label && key) {
+    const fieldPayload = {
+      field_label: label,
+      field_key: key,
+      field_type: document.getElementById("field_type").value,
+      is_required: document.getElementById("is_required").checked
+    };
+
+    await fetch(
+      "https://erp.backend.smartbus360.com/students/form-fields",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + window.ACCESS_TOKEN
+        },
+        body: JSON.stringify(fieldPayload)
+      }
+    );
+  }
+
+  alert("Customization saved");
+  closeCustomize();
+  location.reload();
+}
+</script>
+
+{% endblock %}

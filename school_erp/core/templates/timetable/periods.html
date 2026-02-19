@@ -1,0 +1,125 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<h2 class="text-xl font-semibold mb-6">Time Periods</h2>
+
+<!-- Add Period -->
+<div class="bg-white rounded-lg p-6 mb-8 w-[420px]">
+    <h3 class="font-medium mb-4">Add Period</h3>
+
+    <div class="space-y-3">
+        <input
+            id="periodName"
+            type="text"
+            placeholder="Period name (e.g. Period 1)"
+            class="border rounded px-3 py-2 w-full"
+        />
+
+        <div class="flex gap-3">
+            <input
+                id="startTime"
+                type="time"
+                class="border rounded px-3 py-2 w-full"
+            />
+            <input
+                id="endTime"
+                type="time"
+                class="border rounded px-3 py-2 w-full"
+            />
+        </div>
+
+        <input
+            id="orderNo"
+            type="number"
+            placeholder="Order number (e.g. 1)"
+            class="border rounded px-3 py-2 w-full"
+        />
+
+        <button
+            onclick="addPeriod()"
+            class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 w-full">
+            Add Period
+        </button>
+    </div>
+</div>
+
+<!-- Period List -->
+<div class="bg-white rounded-lg p-6 w-[420px]">
+    <h3 class="font-medium mb-4">Configured Periods</h3>
+
+    <table class="w-full text-sm border">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="border px-2 py-1">Order</th>
+                <th class="border px-2 py-1">Name</th>
+                <th class="border px-2 py-1">Time</th>
+            </tr>
+        </thead>
+        <tbody id="periodList"></tbody>
+    </table>
+</div>
+
+{% block page_js %}
+<script>
+async function loadPeriods() {
+    const res = await fetch("https://erp.backend.smartbus360.com/periods/", {
+        headers: {
+            "Authorization": "Bearer " + window.ACCESS_TOKEN
+
+        }
+    });
+
+    const data = await res.json();
+    const tbody = document.getElementById("periodList");
+    tbody.innerHTML = "";
+
+    data.forEach(p => {
+        tbody.innerHTML += `
+            <tr>
+                <td class="border px-2 py-1 text-center">${p.order_no}</td>
+                <td class="border px-2 py-1">${p.name}</td>
+                <td class="border px-2 py-1">${p.start_time} - ${p.end_time}</td>
+            </tr>
+        `;
+    });
+}
+
+async function addPeriod() {
+    const name = document.getElementById("periodName").value.trim();
+    const start_time = document.getElementById("startTime").value;
+    const end_time = document.getElementById("endTime").value;
+    const order_no = document.getElementById("orderNo").value;
+
+    if (!name || !start_time || !end_time || !order_no) {
+        alert("Fill all fields");
+        return;
+    }
+
+    await fetch("https://erp.backend.smartbus360.com/periods/", {
+        method: "POST",
+        headers: {
+            "Authorization": "Bearer " + window.ACCESS_TOKEN,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            name,
+            start_time,
+            end_time,
+            order_no: parseInt(order_no)
+        })
+    });
+
+    document.getElementById("periodName").value = "";
+    document.getElementById("startTime").value = "";
+    document.getElementById("endTime").value = "";
+    document.getElementById("orderNo").value = "";
+
+    loadPeriods();
+}
+
+// Initial load
+loadPeriods();
+</script>
+{% endblock %}
+
+{% endblock %}

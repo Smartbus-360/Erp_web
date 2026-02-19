@@ -1,0 +1,87 @@
+{% extends "base/base.html" %}
+{% block content %}
+<div class="page-header">
+  <h4>Class Tests <span> | Test Results & Reports</span></h4>
+</div>
+<div class="report-tabs">
+  <button class="tab active">Class-wise</button>
+  <button class="tab">Class & Subject</button>
+  <button class="tab">Student & Subject</button>
+  <button class="tab">Date Range</button>
+  <button class="tab">Performance Report</button>
+</div>
+<div class="card p-4 mb-4">
+  <label class="required">Select Class</label>
+  <select class="form-control w-50">
+    <option value="">Select a Class*</option>
+    <option value="12">12</option>
+  </select>
+</div>
+<div class="card p-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>📊 Class-wise Results <span class="badge">Class: 12</span></h4>
+
+    <button class="btn btn-primary">
+      🖨 Print Results
+    </button>
+  </div>
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Student Name</th>
+      <th>Subject</th>
+      <th>Date</th>
+      <th>Total Marks</th>
+      <th>Obtained Marks</th>
+      <th>Percentage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>23456</td>
+      <td>Aman</td>
+      <td>Maths</td>
+      <td>2025-12-16</td>
+      <td>100</td>
+      <td>76</td>
+      <td>76.00%</td>
+    </tr>
+  </tbody>
+</table>
+<div class="mt-5">
+  <h5 class="text-center mb-3">Average Percentage</h5>
+  <canvas id="avgChart" height="120"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const ctx = document.getElementById('avgChart').getContext('2d');
+
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: ['Class 12'],
+    datasets: [{
+      label: 'Average Percentage',
+      data: [76],
+      backgroundColor: '#4f46e5'
+    }]
+  },
+  options: {
+    plugins: {
+      legend: { display: true }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 100
+      }
+    }
+  }
+});
+</script>
+</div>
+{% endblock %}
+

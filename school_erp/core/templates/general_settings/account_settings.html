@@ -1,0 +1,157 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<!-- Breadcrumb -->
+<div class="mb-6 text-sm text-gray-500">
+    General Settings /
+    <span class="font-medium text-gray-800">Account Settings</span>
+</div>
+
+<!-- Page Wrapper -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- LEFT : FORM -->
+    <div class="lg:col-span-2 bg-white rounded-2xl border p-8">
+
+        <!-- Header -->
+        <div class="bg-indigo-500 text-white rounded-full px-6 py-3 mb-8 flex items-center gap-2">
+            <i class="ri-settings-3-line"></i>
+            <span class="font-semibold">Account Settings</span>
+        </div>
+
+        <form class="space-y-6">
+
+            <!-- Username -->
+            <div>
+                <label class="text-sm font-medium text-gray-600">Username*</label>
+                <input type="email"
+                       class="input mt-1"
+                       value="aditikumar.work@gmail.com">
+            </div>
+
+            <!-- Password -->
+            <div>
+                <label class="text-sm font-medium text-gray-600">Password*</label>
+                <div class="relative">
+                    <input type="password"
+                           class="input mt-1 pr-10"
+                           value="password">
+                    <i class="ri-eye-line absolute right-3 top-3 text-gray-400 cursor-pointer"></i>
+                </div>
+            </div>
+
+            <!-- Timezone -->
+            <div>
+                <label class="text-sm font-medium text-gray-600">Timezone*</label>
+                <select class="input mt-1">
+                    <option>Asia/Karachi</option>
+                    <option>Asia/Kolkata</option>
+                    <option>UTC</option>
+                </select>
+            </div>
+
+            <!-- Currency -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <div>
+                    <label class="text-sm font-medium text-gray-600">Currency*</label>
+                    <select class="input mt-1">
+                        <option>Dollars (USD)</option>
+                        <option>Rupees (INR)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-sm font-medium text-gray-600">Symbol*</label>
+                    <input type="text" class="input mt-1" value="$">
+                </div>
+
+            </div>
+
+            <!-- Update Button -->
+            <button type="submit"
+                    class="mt-8 flex items-center gap-2 bg-sky-500 hover:bg-sky-600
+                           text-white px-8 py-3 rounded-full font-semibold">
+                <i class="ri-refresh-line"></i>
+                Update Settings
+            </button>
+
+        </form>
+    </div>
+
+    <!-- RIGHT : ACCOUNT DETAILS -->
+    <div class="bg-gradient-to-br from-indigo-600 to-blue-600
+                rounded-2xl text-white p-8 relative overflow-hidden">
+
+        <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
+            <i class="ri-lock-line"></i>
+            Account details
+        </h3>
+
+        <div class="space-y-3 text-sm">
+
+            <p>
+                <span class="opacity-80">Username:</span><br>
+                <span class="font-medium">aditikumar.work@gmail.com</span>
+            </p>
+
+            <p>
+                <span class="opacity-80">Password:</span><br>
+                <span class="font-medium">************</span>
+            </p>
+
+            <p>
+                <span class="opacity-80">Subscription:</span><br>
+                <span class="inline-flex items-center gap-1 bg-green-500 px-3 py-1 rounded-full text-xs">
+                    ✔ FREE
+                </span>
+            </p>
+
+            <p>
+                <span class="opacity-80">Expiry:</span><br>
+                <span class="font-medium">Never</span>
+            </p>
+
+        </div>
+
+        <!-- Delete -->
+        <button
+            class="mt-8 bg-red-500 hover:bg-red-600
+                   px-6 py-3 rounded-full font-semibold flex items-center gap-2">
+            <i class="ri-delete-bin-line"></i>
+            Delete Account
+        </button>
+
+    </div>
+
+</div>
+
+{% block page_js %}
+<script>
+async function getCurrentUser() {
+    const token = window.ACCESS_TOKEN;
+
+    if (!token) {
+console.info("No ACCESS_TOKEN (public page or not logged in)");
+        return null;
+    }
+
+    const res = await fetch("https://erp.backend.smartbus360.com/auth/me", {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    });
+
+    if (!res.ok) {
+        console.warn("Auth failed", res.status);
+        return null;
+    }
+
+    return await res.json();
+}
+</script>
+
+{% endblock %}
+
+
+{% endblock %}

@@ -1,0 +1,204 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<h2 class="text-xl font-semibold mb-6">Class Timetable</h2>
+
+<!-- Filters -->
+<div class="flex gap-4 mb-6">
+    <select id="classSelect" class="border rounded px-3 py-2 w-40"></select>
+    <select id="sectionSelect" class="border rounded px-3 py-2 w-40"></select>
+</div>
+<button
+  onclick="exportTimetable()"
+  class="mb-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+  Export Timetable
+</button>
+
+<!-- Timetable Grid -->
+<div class="overflow-auto">
+    <table class="border-collapse border w-full text-sm">
+        <thead id="periodHeader"></thead>
+        <tbody id="timetableBody"></tbody>
+    </table>
+</div>
+
+<!-- Slot Modal -->
+<div id="slotModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center">
+    <div class="bg-white rounded-lg p-6 w-96">
+        <h3 class="font-semibold mb-4">Assign Period</h3>
+
+        <select id="subjectSelect" class="border rounded px-3 py-2 w-full mb-3"></select>
+        <select id="teacherSelect" class="border rounded px-3 py-2 w-full mb-4"></select>
+
+        <div class="flex justify-end gap-2">
+            <button onclick="closeModal()" class="px-4 py-2 border rounded">Cancel</button>
+            <button onclick="saveSlot()" class="px-4 py-2 bg-indigo-600 text-white rounded">
+                Save
+            </button>
+        </div>
+    </div>
+</div>
+
+{% block page_js %}
+<script>
+let weekdays = [];
+let periods = [];
+let currentCell = {};
+
+async function init() {
+    await loadClasses();
+    await loadSubjects();
+    await loadTeachers();
+}
+
+async function loadClasses() {
+    const res = await fetch("https://erp.backend.smartbus360.com/classes/", {
+        headers: { Authorization: "Bearer " + window.ACCESS_TOKEN
+ }
+    });
+    const data = await res.json();
+    classSelect.innerHTML = `<option value="">Select Class</option>`;
+    data.forEach(c => {
+        classSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+    });
+}
+
+classSelect.onchange = async () => {
+    await loadSections();
+};
+
+async function loadSections() {
+    const classId = classSelect.value;
+    const res = await fetch(`https://erp.backend.smartbus360.com/sections/?class_id=${classId}`, {
+        headers: {Authorization: "Bearer " + window.ACCESS_TOKEN
+ }
+    });
+    const data = await res.json();
+    sectionSelect.innerHTML = `<option value="">Select Section</option>`;
+    data.forEach(s => {
+        sectionSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+    });
+}
+
+sectionSelect.onchange = loadGrid;
+
+async function loadGrid() {
+    const classId = classSelect.value;
+    const sectionId = sectionSelect.value;
+
+    const [wdRes, pRes, ttRes] = await Promise.all([
+        fetch("https://erp.backend.smartbus360.com/weekdays/", { headers: auth() }),
+        fetch("https://erp.backend.smartbus360.com/periods/", { headers: auth() }),
+        fetch(`https://erp.backend.smartbus360.com/timetable/?class_id=${classId}&section_id=${sectionId}`, { headers: auth() })
+    ]);
+
+    weekdays = await wdRes.json();
+    periods = await pRes.json();
+    const timetable = await ttRes.json();
+
+    renderGrid(weekdays, periods, timetable);
+}
+
+function renderGrid(weekdays, periods, timetable) {
+    periodHeader.innerHTML = `
+        <tr>
+            <th class="border px-2 py-1">Day</th>
+            ${periods.map(p => `<th class="border px-2 py-1">${p.name}</th>`).join("")}
+        </tr>
+    `;
+
+    timetableBody.innerHTML = "";
+
+    weekdays.forEach(wd => {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td class="border px-2 py-1 font-medium">${wd.name}</td>`;
+
+        periods.forEach(p => {
+            const cell = document.createElement("td");
+            cell.className = "border px-2 py-1 text-center cursor-pointer hover:bg-indigo-50";
+
+            const slot = timetable.find(
+                t => t.weekday_id === wd.id && t.period_no === p.order_no
+            );
+
+            cell.innerText = slot ? "Assigned" : "+";
+            cell.onclick = () => openModal(wd.id, p.order_no);
+
+            row.appendChild(cell);
+        });
+
+        timetableBody.appendChild(row);
+    });
+}
+
+function openModal(weekdayId, periodNo) {
+    currentCell = { weekdayId, periodNo };
+    slotModal.classList.remove("hidden");
+    slotModal.classList.add("flex");
+}
+
+function closeModal() {
+    slotModal.classList.add("hidden");
+}
+
+async function saveSlot() {
+    await fetch("https://erp.backend.smartbus360.com/timetable/", {
+        method: "POST",
+        headers: {
+            ...auth(),
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            class_id: classSelect.value,
+            section_id: sectionSelect.value,
+            weekday_id: currentCell.weekdayId,
+            period_no: currentCell.periodNo,
+            subject_id: subjectSelect.value,
+            teacher_id: teacherSelect.value
+        })
+    });
+
+    closeModal();
+    loadGrid();
+}
+
+async function loadSubjects() {
+    const res = await fetch("https://erp.backend.smartbus360.com/subjects/", { headers: auth() });
+    const data = await res.json();
+    subjectSelect.innerHTML = data.map(s =>
+        `<option value="${s.id}">${s.name}</option>`
+    ).join("");
+}
+
+async function loadTeachers() {
+    const res = await fetch("https://erp.backend.smartbus360.com/employees/", { headers: auth() });
+    const data = await res.json();
+    teacherSelect.innerHTML = data.map(t =>
+        `<option value="${t.id}">${t.name}</option>`
+    ).join("");
+}
+
+function auth() {
+    return { Authorization: "Bearer " + window.ACCESS_TOKEN
+};
+}
+
+function exportTimetable() {
+    const classId = classSelect.value;
+    const sectionId = sectionSelect.value;
+
+    if (!classId || !sectionId) {
+        alert("Select class and section first");
+        return;
+    }
+
+    window.open(
+        `/timetable/print/?class_id=${classId}&section_id=${sectionId}`,
+        "_blank"
+    );
+}
+
+init();
+</script>
+{% endblock %}
+{% endblock %}

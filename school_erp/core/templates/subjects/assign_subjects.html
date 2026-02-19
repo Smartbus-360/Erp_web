@@ -1,0 +1,646 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<!-- Breadcrumb -->
+<div class="mb-6 flex items-center gap-2 text-sm text-gray-500">
+    <span class="font-medium text-gray-700">Subjects</span>
+    <span>/</span>
+    <span class="text-gray-800 font-semibold">Assign Subjects</span>
+</div>
+
+<!-- Card Wrapper -->
+<div class="flex justify-center">
+
+    <div class="bg-white border rounded-2xl p-10 w-full max-w-3xl">
+
+        <!-- Title -->
+        <h2 class="text-2xl font-semibold text-center mb-2">
+            Create Subjects
+        </h2>
+
+        <!-- Required / Optional -->
+        <div class="flex justify-center gap-4 text-sm mb-8">
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 bg-indigo-500 rounded-full"></span> Required*
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 bg-gray-400 rounded-full"></span> Optional
+            </div>
+        </div>
+
+        <!-- Select Class -->
+        <div class="mb-6">
+            <label class="inline-block text-xs font-semibold bg-indigo-500 text-white px-3 py-1 rounded-full mb-2">
+                Select Class*
+            </label>
+<select id="classSelect" class="input" required>
+    <option value="">Select Class</option>
+</select>
+
+        </div>
+         <div class="mb-6">
+            <label class="inline-block text-xs font-semibold bg-indigo-500 text-white px-3 py-1 rounded-full mb-2">
+                Select Section*
+            </label>
+<select id="sectionSelect" class="input mt-3" required>
+    <option value="">Select Section</option>
+</select>
+
+        </div>
+
+        <!-- Subjects Header -->
+<div class="grid grid-cols-5 gap-3 text-sm font-semibold text-gray-600 mt-6 mb-2">
+    <div>Subject</div>
+    <div>Marks</div>
+    <div>Teacher</div>
+    <div>Syllabus</div>
+    <div></div>
+</div>
+
+<!-- Dynamic subject rows -->
+<div id="subjectsContainer"></div>
+
+<div class="flex justify-center mt-6">
+    <button type="button"
+            id="addMoreBtn"
+            class="flex items-center gap-2 bg-gray-800 text-white px-6 py-2 rounded-full text-sm">
+        <i class="ri-add-line"></i> Add More
+    </button>
+</div>
+
+
+        <!-- Subject Row -->
+        <!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4"> -->
+
+            <!-- Subject Name -->
+            <!-- <div>
+                <label class="inline-block text-xs font-semibold bg-indigo-500 text-white px-3 py-1 rounded-full mb-2">
+                    Subject Name*
+                </label>
+                <input type="text"
+                       placeholder="Name Of Subject"
+                       class="w-full px-5 py-3 border rounded-full focus:ring-2 focus:ring-indigo-400 outline-none">
+            </div> -->
+            <!-- <div id="subjectsContainer" class="mt-6"></div>
+
+<button type="button" id="addMoreBtn"
+        class="mt-4 px-4 py-2 bg-indigo-500 text-white rounded">
+    + Add More
+</button>
+
+
+            <!-- Marks -->
+            <!-- <div>
+                <label class="inline-block text-xs font-semibold bg-indigo-500 text-white px-3 py-1 rounded-full mb-2">
+                    Marks*
+                </label>
+                <input type="number"
+                       placeholder="Total Exam Marks"
+                       class="w-full px-5 py-3 border rounded-full focus:ring-2 focus:ring-indigo-400 outline-none">
+            </div>
+
+        </div> --> 
+
+        <!-- Add / Remove -->
+        <!-- <div class="flex justify-center gap-4 mb-8">
+            <button class="flex items-center gap-2 bg-gray-300 text-gray-700 px-5 py-2 rounded-full text-sm">
+                <i class="ri-add-line"></i> Add More
+            </button>
+            <button class="flex items-center gap-2 bg-gray-800 text-white px-5 py-2 rounded-full text-sm">
+                <i class="ri-subtract-line"></i> Remove
+            </button>
+        </div> -->
+
+        <!-- Submit -->
+        <div class="flex justify-center">
+<button id="submitBtn"
+        class="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500
+               text-black font-medium px-8 py-3 rounded-full transition">
+    <i class="ri-add-line"></i>
+    Assign Subjects
+</button>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- <template id="subjectRowTemplate">
+    <div class="subject-row grid grid-cols-1 md:grid-cols-5 gap-3 mb-4">
+
+        <input type="text" class="subject-name input"
+               placeholder="Subject Name" required />
+
+        <input type="number" class="subject-marks input"
+               placeholder="Marks" required />
+
+        <select class="subject-teacher input" required>
+            <option value="">Select Teacher</option>
+        </select>
+
+        <button type="button"
+                class="syllabus-btn bg-indigo-100 text-indigo-700 px-3 rounded">
+            Add Syllabus
+        </button>
+
+        <button type="button"
+                class="remove-btn text-red-500">
+            Remove
+        </button>
+
+    </div>
+</template> -->
+<template id="subjectRowTemplate">
+    <div class="subject-row grid grid-cols-5 gap-3 items-center mb-3">
+
+        <!-- Subject -->
+        <input type="text"
+               class="subject-name px-4 py-2 border rounded-full"
+               placeholder="Subject Name"
+               required />
+
+        <!-- Marks -->
+        <input type="number"
+               class="subject-marks px-4 py-2 border rounded-full"
+               placeholder="Marks"
+               required />
+
+        <!-- Teacher -->
+        <select class="subject-teacher px-4 py-2 border rounded-full" required>
+            <option value="">Select</option>
+        </select>
+
+        <!-- Syllabus -->
+        <button type="button"
+                class="syllabus-btn text-indigo-600 text-sm underline">
+            Add Syllabus
+        </button>
+
+        <!-- Remove -->
+        <button type="button"
+                class="remove-btn text-red-500 text-sm">
+            Remove
+        </button>
+
+    </div>
+</template>
+
+<!-- Syllabus Modal -->
+<div id="syllabusModal"
+     class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+
+    <div class="bg-white rounded-xl p-6 w-full max-w-lg relative">
+
+        <h3 class="text-lg font-semibold mb-4">Add Syllabus</h3>
+
+        <!-- Title -->
+        <input id="syllabusTitle"
+               type="text"
+               class="input w-full mb-3"
+               placeholder="Syllabus Title" />
+
+        <!-- Description -->
+        <textarea id="syllabusDesc"
+                  class="input w-full mb-3"
+                  placeholder="Description"
+                  rows="4"></textarea>
+
+        <!-- Image -->
+        <input id="syllabusImage"
+               type="file"
+               accept="image/*"
+               class="mb-4" />
+
+        <!-- Actions -->
+        <div class="flex justify-end gap-3">
+            <button type="button"
+                    id="cancelSyllabus"
+                    class="px-4 py-2 border rounded">
+                Cancel
+            </button>
+            <button type="button"
+                    id="saveSyllabus"
+                    class="px-4 py-2 bg-indigo-600 text-white rounded">
+                Save
+            </button>
+        </div>
+
+    </div>
+</div>
+
+
+{% block page_js %}
+<script>
+function getQueryParam(key) {
+    return new URLSearchParams(window.location.search).get(key);
+}
+
+// if (editClassId) {
+//     // Preselect class
+//     document.getElementById("classSelect").value = editClassId;
+
+//     // Trigger section load
+//     document.getElementById("classSelect").dispatchEvent(new Event("change"));
+
+//     // Load already assigned subjects
+//     loadAssignedSubjects(editClassId);
+// }
+
+(async () => {
+    // 🔹 Load classes
+    const classRes = await fetch("https://erp.backend.smartbus360.com/classes/", {
+        headers: {
+            "Authorization": "Bearer " + window.ACCESS_TOKEN
+
+        }
+    });
+    const classes = await classRes.json();
+
+const classSelect = document.getElementById("classSelect");
+    classSelect.innerHTML = '<option value="">Select*</option>';
+
+    classes.forEach(cls => {
+        classSelect.innerHTML += `<option value="${cls.id}">${cls.name}</option>`;
+    });
+})();
+document.getElementById("classSelect").addEventListener("change", async (e) => {
+    const classId = e.target.value;
+    const sectionSelect = document.getElementById("sectionSelect");
+
+    sectionSelect.innerHTML = `<option value="">Loading...</option>`;
+
+    if (!classId) {
+        sectionSelect.innerHTML = `<option value="">Select Section</option>`;
+        return;
+    }
+
+    const res = await fetch(
+        `https://erp.backend.smartbus360.com/sections/?class_id=${classId}`,
+        {
+            headers: {
+Authorization: "Bearer " + window.ACCESS_TOKEN
+
+            }
+        }
+    );
+
+    const sections = await res.json();
+
+    sectionSelect.innerHTML = `<option value="">Select Section</option>`;
+    sections.forEach(sec => {
+        sectionSelect.innerHTML += `<option value="${sec.id}">${sec.name}</option>`;
+    });
+});
+
+
+// 🔹 Handle assign subjects
+// document.querySelector("button[type='submit'], .bg-yellow-400")
+//     .addEventListener("click", async () => {
+
+//         const classId = document.querySelector("select").value;
+//         const subjectName = document.querySelector("input[placeholder='Name Of Subject']").value;
+//         const marks = document.querySelector("input[type='number']").value;
+
+//         if (!classId || !subjectName || !marks) {
+//             alert("All fields are required");
+//             return;
+//         }
+
+//         // 1️⃣ Create subject
+//         const subjectRes = await fetch("https://erp.backend.smartbus360.com/subjects/", {
+//             method: "POST",
+//             headers: {
+//                 "Authorization": "Bearer " + localStorage.getItem("access_token"),
+//                 "Content-Type": "application/json"
+//             },
+//             body: JSON.stringify({ name: subjectName })
+//         });
+
+//         if (!subjectRes.ok) {
+//             alert("Subject already exists or failed");
+//             return;
+//         }
+
+//         const subject = await subjectRes.json();
+
+//         // 2️⃣ Assign subject to class
+//         const assignRes = await fetch("https://erp.backend.smartbus360.com/subjects/assign", {
+//             method: "POST",
+//             headers: {
+//                 "Authorization": "Bearer " + localStorage.getItem("access_token"),
+//                 "Content-Type": "application/json"
+//             },
+//             body: JSON.stringify({
+//                 class_id: parseInt(classId),
+//                 subject_ids: [subject.id]
+//             })
+//         });
+
+//         if (!assignRes.ok) {
+//             alert("Failed to assign subject");
+//             return;
+//         }
+
+//         window.location.href = "/subjects/classes/";
+// });
+
+window.teachersCache = window.teachersCache || [];
+
+async function loadTeachers() {
+    const res = await fetch("https://erp.backend.smartbus360.com/employees/", {
+        headers: {
+Authorization: "Bearer " + window.ACCESS_TOKEN
+
+        }
+    });
+window.teachersCache = await res.json();
+}
+function populateTeacher(select) {
+    select.innerHTML = `<option value="">Select Teacher</option>`;
+window.teachersCache.forEach(t => {
+        select.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+    });
+}
+
+function addSubjectRow() {
+    const tpl = document.getElementById("subjectRowTemplate");
+
+    // ✅ clone ONCE
+    const fragment = tpl.content.cloneNode(true);
+
+    // ✅ get actual element
+    const row = fragment.querySelector(".subject-row");
+
+    const teacherSelect = row.querySelector(".subject-teacher");
+    populateTeacher(teacherSelect);
+
+    // ✅ syllabus button works now
+    row.querySelector(".syllabus-btn").onclick = () => {
+        openSyllabusModal(row);
+    };
+
+    // remove row
+    row.querySelector(".remove-btn").onclick = () => {
+        row.remove();
+    };
+
+    document.getElementById("subjectsContainer").appendChild(fragment);
+}
+// 🔹 Add More button click
+document.getElementById("addMoreBtn").onclick = addSubjectRow;
+
+// 🔹 Initial load
+// (async () => {
+//     await loadTeachers();
+//     addSubjectRow();   // first subject row
+// })();
+
+// (async () => {
+//     await loadTeachers();
+
+//     // Only add row if NOT editing
+//     if (!editClassId) {
+//         addSubjectRow();
+//     }
+// })();
+
+
+const editClassId = new URLSearchParams(window.location.search).get("class_id");
+const editSectionId = new URLSearchParams(window.location.search).get("section_id");
+
+(async () => {
+    await loadTeachers();
+
+    // ➜ Only add empty row for NEW assignment
+    if (!editClassId) {
+        addSubjectRow();
+    }
+})();
+
+(async () => {
+    await loadTeachers();
+
+    if (editClassId) {
+        const classSelect = document.getElementById("classSelect");
+        classSelect.value = editClassId;
+
+        // Trigger section fetch
+        classSelect.dispatchEvent(new Event("change"));
+
+        // ⏳ wait for DOM + sections
+const sectionSelect = document.getElementById("sectionSelect");
+
+const waitForSections = setInterval(() => {
+    if (sectionSelect.options.length > 1) {
+        if (editSectionId) {
+            sectionSelect.value = editSectionId;
+        }
+        clearInterval(waitForSections);
+        loadAssignedSubjects(editClassId);
+    }
+}, 100);
+
+    } else {
+        addSubjectRow(); // new assignment
+    }
+})();
+
+
+let activeSyllabusRow = null;
+
+function openSyllabusModal(row) {
+    activeSyllabusRow = row;
+
+    // prefill if exists
+    const data = row.syllabusData || {};
+    document.getElementById("syllabusTitle").value = data.title || "";
+    document.getElementById("syllabusDesc").value = data.description || "";
+
+    document.getElementById("syllabusModal").classList.remove("hidden");
+    document.getElementById("syllabusModal").classList.add("flex");
+}
+
+function closeSyllabusModal() {
+    document.getElementById("syllabusModal").classList.add("hidden");
+    document.getElementById("syllabusModal").classList.remove("flex");
+
+    document.getElementById("syllabusTitle").value = "";
+    document.getElementById("syllabusDesc").value = "";
+    document.getElementById("syllabusImage").value = "";
+}
+document.getElementById("saveSyllabus").onclick = () => {
+    if (!activeSyllabusRow) return;
+
+    const title = document.getElementById("syllabusTitle").value;
+    const description = document.getElementById("syllabusDesc").value;
+    const imageInput = document.getElementById("syllabusImage");
+
+    activeSyllabusRow.syllabusData = {
+        title,
+        description,
+        // imageFile: imageInput.files[0] || null
+    };
+
+    // Visual feedback
+    activeSyllabusRow.querySelector(".syllabus-btn").innerText = "Syllabus Added";
+    activeSyllabusRow.querySelector(".syllabus-btn").classList.add("bg-green-100", "text-green-700");
+
+    closeSyllabusModal();
+};
+document.getElementById("cancelSyllabus").onclick = closeSyllabusModal;
+
+    
+document.getElementById("submitBtn").onclick = async () => {
+    const classId = document.getElementById("classSelect").value;
+    const sectionId = document.getElementById("sectionSelect").value;
+
+    if (!classId || !sectionId) {
+        alert("Select class and section");
+        return;
+    }
+
+    const rows = document.querySelectorAll(".subject-row");
+    const subjectsPayload = [];
+
+
+    for (const row of rows) {
+        const name = row.querySelector(".subject-name").value.trim();
+        const teacherId = row.querySelector(".subject-teacher").value;
+
+        if (!name || name.trim() === "") {
+            alert("Subject name is required");
+            return;
+        }
+
+        // create or get subject
+        let subject;
+        const createRes = await fetch("https://erp.backend.smartbus360.com/subjects/", {
+            method: "POST",
+            headers: {
+        Authorization: "Bearer " + window.ACCESS_TOKEN
+
+,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ name })
+        });
+
+        if (createRes.ok) {
+            subject = await createRes.json();
+        } else {
+            const existRes = await fetch(
+                `https://erp.backend.smartbus360.com/subjects/by-name?name=${encodeURIComponent(name)}`,
+                {
+                    headers: {
+Authorization: "Bearer " + window.ACCESS_TOKEN
+
+                    }
+                }
+            );
+            subject = await existRes.json();
+        }
+
+        subjectsPayload.push({
+    subject_id: subject.id,
+    teacher_id: teacherId ? parseInt(teacherId) : null
+});
+
+
+
+
+
+        // save syllabus if added
+        if (row.syllabusData) {
+            if (!teacherId) {
+                alert("Select teacher for syllabus");
+                return;
+            }
+
+            await fetch("https://erp.backend.smartbus360.com/syllabus/", {
+                method: "POST",
+                headers: {
+                    Authorization: "Bearer " + window.ACCESS_TOKEN,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    class_id: parseInt(classId),
+                    section_id: parseInt(sectionId),
+                    subject_id: subject.id,
+                    teacher_id: parseInt(teacherId),
+                    title: row.syllabusData.title,
+                    description: row.syllabusData.description
+                })
+            });
+        }
+    }
+
+    await fetch("https://erp.backend.smartbus360.com/subjects/assign", {
+    method: "POST",
+    headers: {
+        "Authorization": "Bearer " + window.ACCESS_TOKEN,
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+        class_id: parseInt(classId),
+        subjects: subjectsPayload
+    })
+});
+
+    alert("Subjects saved successfully");
+    window.location.href = "/subjects/classes/";
+};
+
+// async function loadAssignedSubjects(classId) {
+//     const res = await fetch(
+//         `https://erp.backend.smartbus360.com/subjects/class/${classId}`,
+//         {
+//             headers: {
+// Authorization: "Bearer " + window.ACCESS_TOKEN
+
+//             }
+//         }
+//     );
+
+//     const subjects = await res.json();
+
+//     document.getElementById("subjectsContainer").innerHTML = "";
+
+//     for (const sub of subjects) {
+//         addSubjectRow();
+
+//         const rows = document.querySelectorAll(".subject-row");
+//         const row = rows[rows.length - 1];
+
+//         row.querySelector(".subject-name").value = sub.name;
+//         row.querySelector(".subject-marks").value = sub.marks || 100;
+//     }
+// }
+async function loadAssignedSubjects(classId) {
+    const res = await fetch(
+        `https://erp.backend.smartbus360.com/subjects/details/${classId}`,
+        {
+            headers: {
+                Authorization: "Bearer " + window.ACCESS_TOKEN
+            }
+        }
+    );
+
+    const data = await res.json();
+    document.getElementById("subjectsContainer").innerHTML = "";
+
+    for (const s of data) {
+        addSubjectRow();
+
+        const row = document.querySelector(".subject-row:last-child");
+        row.querySelector(".subject-name").value = s.subject_name;
+        row.querySelector(".subject-teacher").value = s.teacher_id || "";
+        row.querySelector(".subject-marks").value = 100;
+    }
+}
+
+
+</script>
+{% endblock %}
+
+
+{% endblock %}

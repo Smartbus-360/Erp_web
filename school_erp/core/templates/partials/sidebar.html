@@ -1,0 +1,56 @@
+<!-- General Settings -->
+<div x-data="{ open: false }" class="space-y-1">
+
+    <!-- Parent -->
+    <button
+        @click="open = !open"
+        class="w-full flex items-center justify-between px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">
+        <div class="flex items-center">
+            <i class="ri-settings-3-line mr-3"></i>
+            <span>General Settings</span>
+        </div>
+        <i class="ri-arrow-down-s-line transition-transform"
+           :class="{ 'rotate-180': open }"></i>
+    </button>
+
+    <!-- Submenu -->
+    <div x-show="open" x-transition class="ml-8 space-y-1 text-sm">
+
+        <a href="#" class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Institute Profile
+        </a>
+
+        <a href="#" class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Fee Particulars
+        </a>
+
+        <a href="#" class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Fee Structure
+        </a>
+
+        <a href="#" class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Discount Type
+        </a>
+
+        <a href="#" class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Accounts For Fees Invoice
+        </a>
+
+        <a href="#" class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Rules & Regulations
+        </a>
+
+        <a href="#" class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Marks & Grading
+        </a>
+
+        <a href="#" class="block px-2 py-1 text-gray-500 hover:text-blue-600">
+            Account Settings
+        </a>
+
+        <a href="#" class="block px-2 py-1 text-red-500 hover:text-red-600">
+            Logout
+        </a>
+
+    </div>
+</div>

@@ -1,0 +1,364 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="p-6">
+
+    <!-- Header -->
+    <div class="mb-6">
+        <h2 class="text-lg font-semibold">Students | Students Login</h2>
+    </div>
+
+    <div class="grid grid-cols-12 gap-6">
+
+        <!-- LEFT SEARCH PANEL -->
+        <div class="col-span-4">
+            <div class="bg-white p-6 rounded-xl shadow">
+
+                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    🔍 Search
+                </h3>
+
+                <div class="mb-4">
+                    <label class="text-sm font-medium">Search Student*</label>
+                    <input
+                    id="searchInput"
+                        type="text"
+                        placeholder="Search Student"
+                        class="w-full mt-1 px-4 py-2 border rounded-full focus:ring-2 focus:ring-indigo-400"
+                    >
+                </div>
+
+                <div class="mb-4">
+                    <label class="text-sm font-medium">Select Class*</label>
+                    <select
+                    id="classFilter"
+                        class="w-full mt-1 px-4 py-2 border rounded-full focus:ring-2 focus:ring-indigo-400"
+                    >
+                    </select>
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="#" class="text-sm text-indigo-500 underline">
+                        or, Reload All
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- RIGHT TABLE -->
+        <div class="col-span-8">
+            <div class="bg-white p-6 rounded-xl shadow">
+
+                <!-- Actions -->
+                <div class="flex justify-between items-center mb-4">
+
+                    <div class="flex gap-2 flex-wrap">
+                        <button class="px-3 py-1 bg-gray-200 rounded-full text-sm">Copy</button>
+                        <button class="px-3 py-1 bg-gray-200 rounded-full text-sm">CSV</button>
+                        <button class="px-3 py-1 bg-gray-200 rounded-full text-sm">Excel</button>
+                        <button class="px-3 py-1 bg-gray-200 rounded-full text-sm">PDF</button>
+                        <button class="px-3 py-1 bg-gray-200 rounded-full text-sm">Print</button>
+                        <button class="px-3 py-1 bg-gray-200 rounded-full text-sm">
+                            Column visibility ▼
+                        </button>
+                    </div>
+
+                    <!-- <div class="flex items-center gap-2">
+                        <span class="text-sm">Search:</span>
+                        <input type="text" class="px-3 py-1 border rounded">
+                    </div> -->
+                </div>
+
+                <!-- Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm border-separate border-spacing-y-2">
+
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="px-3 py-2 rounded-l-lg">ID</th>
+                                <th class="px-3 py-2">Student Name</th>
+                                <th class="px-3 py-2">Class</th>
+                                <th class="px-3 py-2">Username</th>
+                                <th class="px-3 py-2">Password</th>
+                                <th class="px-3 py-2 rounded-r-lg">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="studentTableBody">
+    <!-- Rows will be injected by JS -->
+</tbody>
+
+                    </table>
+                </div>
+
+                <!-- Footer -->
+                <div class="flex justify-between items-center mt-4 text-sm text-gray-600">
+                    <span>Showing 1 to 1 of 1 entries</span>
+
+                    <div class="flex items-center gap-2">
+                        <button class="px-3 py-1 border rounded">Previous</button>
+                        <button class="px-3 py-1 bg-indigo-500 text-white rounded">1</button>
+                        <button class="px-3 py-1 border rounded">Next</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+<script>
+async function loadClassesForFilter() {
+
+    if (!token) {
+        alert("Login expired. Please login again.");
+        window.location.href = "/login/";
+        return;
+    }
+
+    const res = await fetch("https://erp.backend.smartbus360.com/classes/", {
+        headers: {
+            "Authorization": "Bearer " + window.ACCESS_TOKEN,
+        }
+    });
+
+    if (!res.ok) {
+        alert("Failed to load classes");
+        return;
+    }
+
+    const classes = await res.json();
+    const select = document.getElementById("classFilter");
+
+    // reset options
+    select.innerHTML = `<option value="">All Classes</option>`;
+
+    classes.forEach(cls => {
+        const opt = document.createElement("option");
+        opt.value = cls.name;      // IMPORTANT: backend filter uses class_name
+        opt.textContent = cls.name;
+        select.appendChild(opt);
+    });
+}
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    loadClassesForFilter();   // load class dropdown
+    loadStudents();           // load table
+
+
+    const searchInput = document.getElementById("searchInput");
+    const classFilter = document.getElementById("classFilter");
+    const tbody = document.getElementById("studentTableBody");
+
+    async function loadStudents(search = "", className = "") {
+        let url = `https://erp.backend.smartbus360.com/students/?search=${search}`;
+        if (className) {
+            url += `&class_name=${className}`;
+        }
+
+        const res = await fetch(url, {
+            headers: {
+                "Authorization":
+                    "Bearer " + window.ACCESS_TOKEN
+
+            }
+        });
+
+        const students = await res.json();
+        renderStudents(students);
+    }
+
+    function renderStudents(students) {
+        tbody.innerHTML = "";
+
+        students.forEach(stu => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${stu.admission_no}</td>
+                <td>${stu.name}</td>
+                <td>${stu.class_name}-${stu.section || ""}</td>
+                <td>${stu.login_email || "—"}</td>
+                <td>
+                    ${stu.has_login
+                        ? "<span class='text-green-600'>Active</span>"
+                        : "<span class='text-red-500'>Not Created</span>"
+                    }
+                </td>
+                <td>
+                    
+                    ${stu.has_login
+  ? `
+    <button onclick="editLogin(${stu.id}, '${stu.login_email}')"
+            class="px-2 text-blue-600">Edit</button>
+
+    <button onclick="resetLogin(${stu.id})"
+            class="px-2 text-orange-600">Reset</button>
+
+    <button onclick="toggleLogin(${stu.id})"
+            class="px-2 ${stu.is_active ? 'text-red-600' : 'text-green-600'}">
+        ${stu.is_active ? 'Disable' : 'Enable'}
+    </button>
+  `
+  : `<button onclick="createLogin(${stu.id})"
+            class="px-2 text-green-600">Create</button>`
+            
+}
+<button onclick="changePassword(${stu.id})"
+        class="px-2 text-purple-600">
+    Change Password
+</button>
+
+
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    searchInput.addEventListener("input", () => {
+        loadStudents(searchInput.value, classFilter.value);
+    });
+
+    classFilter.addEventListener("change", () => {
+        loadStudents(searchInput.value, classFilter.value);
+    });
+
+    loadStudents(); // initial load
+});
+
+// exposed globally for buttons
+async function createLogin(studentId) {
+    const email = prompt("Enter email");
+    const password = prompt("Enter temporary password");
+    if (!email || !password) return;
+
+    const res = await fetch(
+        `https://erp.backend.smartbus360.com/students/${studentId}/create-login`,
+        {
+            method: "POST",
+            headers: {
+                "Authorization":
+                    "Bearer " + window.ACCESS_TOKEN,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email, password })
+        }
+    );
+
+    const data = await res.json();
+    alert(data.message);
+    location.reload();
+}
+
+async function resetLogin(studentId) {
+    if (!confirm("Reset password?")) return;
+
+    const res = await fetch(
+        `https://erp.backend.smartbus360.com/students/${studentId}/reset-login`,
+        {
+            method: "POST",
+            headers: {
+                "Authorization":
+                    "Bearer " + window.ACCESS_TOKEN
+
+            }
+        }
+    );
+
+    const data = await res.json();
+    alert(`New password: ${data.temp_password}`);
+}
+</script>
+<script>
+async function editLogin(studentId, currentEmail) {
+    const newEmail = prompt("Update login email:", currentEmail);
+
+    if (!newEmail || newEmail === currentEmail) return;
+
+
+    const res = await fetch(
+        `https://erp.backend.smartbus360.com/students/${studentId}/update-login`,
+        {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + window.ACCESS_TOKEN,
+            },
+            body: JSON.stringify({ email: newEmail })
+        }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+        alert(data.detail || "Failed to update login");
+        return;
+    }
+
+    alert("Login email updated");
+    loadStudents(); // refresh table
+}
+</script>
+<script>
+async function toggleLogin(studentId) {
+    if (!confirm("Change login status for this student?")) return;
+
+
+    const res = await fetch(
+        `https://erp.backend.smartbus360.com/students/${studentId}/toggle-login`,
+        {
+            method: "PUT",
+            headers: {
+                "Authorization": "Bearer " + window.ACCESS_TOKEN,
+            }
+        }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+        alert(data.detail || "Failed");
+        return;
+    }
+
+    alert("Login status updated");
+    loadStudents();
+}
+</script>
+<script>
+async function changePassword(studentId) {
+    const newPassword = prompt("Enter new password:");
+
+    if (!newPassword) return;
+
+
+    const res = await fetch(
+        `https://erp.backend.smartbus360.com/students/${studentId}/change-password`,
+        {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization":"Bearer " + window.ACCESS_TOKEN,
+            },
+            body: JSON.stringify({ password: newPassword })
+        }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+        alert(data.detail || "Failed");
+        return;
+    }
+
+    alert("Password updated successfully");
+}
+</script>
+
+
+{% endblock %}

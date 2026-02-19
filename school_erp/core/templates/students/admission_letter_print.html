@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admission Letter</title>
+    <style>
+        body { font-family: Arial; padding: 40px; }
+        @media print {
+            button { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<h2 align="center">Admission Letter</h2>
+
+<p><strong>Student Name:</strong> <span id="p_name"></span></p>
+<p><strong>Registration No:</strong> <span id="p_reg"></span></p>
+<p><strong>Class:</strong> <span id="p_class"></span></p>
+<p><strong>Gender:</strong> <span id="p_gender"></span></p>
+<p><strong>Date of Birth:</strong> <span id="p_dob"></span></p>
+<p><strong>Caste:</strong> <span id="p_caste"></span></p>
+<p><strong>Religion:</strong> <span id="p_religion"></span></p>
+<p><strong>Blood Group:</strong> <span id="p_blood"></span></p>
+<p><strong>Mobile:</strong> <span id="p_mobile"></span></p>
+<p><strong>Address:</strong> <span id="p_address"></span></p>
+
+<hr>
+
+<h4>Parent Details</h4>
+<p><strong>Father:</strong> <span id="p_father"></span></p>
+<p><strong>Mother:</strong> <span id="p_mother"></span></p>
+<p><strong>Guardian:</strong> <span id="p_guardian"></span></p>
+
+
+<hr>
+
+<h4>Rules & Regulations</h4>
+<p>• Students must follow school discipline.</p>
+<p>• Fees once paid are non-refundable.</p>
+
+<br><br>
+
+<p>Signature of Authority __________________</p>
+
+
+
+</body>
+</html>
+<script>
+async function loadPrintData() {
+
+    // URL: /students/admission-letter/print/2/
+    const pathParts = window.location.pathname.split("/");
+    const studentId = pathParts[pathParts.length - 2];
+
+    const res = await fetch(`https://erp.backend.smartbus360.com/students/${studentId}`, {
+        headers: {
+            "Authorization": "Bearer " + window.ACCESS_TOKEN
+
+        }
+    });
+
+    if (!res.ok) {
+        alert("Failed to load student data for print");
+        return;
+    }
+
+    const stu = await res.json();
+
+    document.getElementById("p_name").innerText = stu.name || "—";
+    document.getElementById("p_reg").innerText = stu.admission_no || "—";
+    document.getElementById("p_class").innerText =
+        stu.class_name + (stu.section ? "-" + stu.section : "");
+    document.getElementById("p_gender").innerText = stu.gender || "—";
+document.getElementById("p_dob").innerText = stu.dob || "—";
+document.getElementById("p_caste").innerText = stu.caste || "—";
+document.getElementById("p_religion").innerText = stu.religion || "—";
+document.getElementById("p_blood").innerText = stu.blood_group || "—";
+document.getElementById("p_mobile").innerText = stu.mobile || "—";
+document.getElementById("p_address").innerText = stu.address || "—";
+
+document.getElementById("p_father").innerText =
+    stu.father_name ? `${stu.father_name} (${stu.father_mobile || ""})` : "—";
+
+document.getElementById("p_mother").innerText =
+    stu.mother_name ? `${stu.mother_name} (${stu.mother_mobile || ""})` : "—";
+
+document.getElementById("p_guardian").innerText =
+    stu.guardian_name ? `${stu.guardian_name} (${stu.guardian_mobile || ""})` : "—";
+
+}
+
+document.addEventListener("DOMContentLoaded", loadPrintData);
+</script>

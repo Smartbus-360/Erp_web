@@ -1,0 +1,498 @@
+{% extends "base/layout.html" %}
+{% block content %}
+<style>
+/* ===== Soft entry animation ===== */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: fadeSlideUp 0.35s ease forwards;
+}
+
+/* ===== Smooth hide/show ===== */
+.hidden {
+  display: none;
+}
+
+/* ===== Button micro-interaction ===== */
+.btn-submit {
+  transition: all 0.2s ease;
+}
+
+.btn-submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(79,70,229,0.25);
+}
+
+.btn-submit:active {
+  transform: scale(0.98);
+}
+
+/* ===== Loading state ===== */
+.btn-loading {
+  pointer-events: none;
+  opacity: 0.8;
+  position: relative;
+}
+
+.btn-loading::after {
+  content: "";
+  width: 18px;
+  height: 18px;
+  border: 2px solid #fff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg) translateY(-50%); }
+}
+.editor-toolbar {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid #e5e7eb;
+  border-bottom: none;
+  background: #f9fafb;
+  border-radius: 8px 8px 0 0;
+}
+
+.editor-toolbar button {
+  padding: 6px 10px;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.editor-toolbar button:hover {
+  background: #eef2ff;
+}
+
+.editor-toolbar select,
+.editor-toolbar input[type="color"] {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 4px;
+}
+
+.editor-box {
+  border: 1px solid #e5e7eb;
+  border-radius: 0 0 8px 8px;
+  min-height: 140px;
+  padding: 12px;
+  font-size: 15px;
+  line-height: 1.6;
+  outline: none;
+}
+
+.editor-box:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99,102,241,0.15);
+}
+.important-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #dc2626;
+  cursor: pointer;
+}
+
+.important-label {
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  transition: all 0.2s ease;
+}
+
+.important-checkbox:checked + .important-label {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+}
+
+</style>
+
+<div class="content-wrapper max-w-4xl mx-auto">
+
+<h2 class="text-xl font-semibold mb-6">Compose Message</h2>
+
+<div class="card p-6">
+<form id="messageForm" enctype="multipart/form-data">
+
+<!-- <label>Send To</label>
+<select name="send_type" class="form-control">
+    <option value="student">Students</option>
+    <option value="employee">Employees</option>
+    <option value="institute">Institute</option>
+</select> -->
+<label class="form-label">Send Message To</label>
+<select id="sendScope" class="form-control" onchange="handleScopeChange()">
+  <option value="">Select</option>
+  <option value="class">Class Coordinator</option>
+  <option value="class_section">Section Teacher</option>
+
+  <option value="class_students">All Students of Class</option>
+  <option value="student_admission">Specific Student</option>
+  <option value="all_students">All Students (Institute)</option>
+  <option value="employees_by_role">Employees by Role</option>
+  <option value="all_employees">All Employees (Institute)</option>
+</select>
+
+
+<div class="mt-3 hidden" id="classBox">
+    <label class="form-label">Select Class</label>
+    <select id="classId" class="form-control"></select>
+</div>
+
+<div class="mt-3 hidden" id="sectionBox">
+    <label class="form-label">Select Section</label>
+    <select id="section" class="form-control"></select>
+</div>
+<div id="admissionBox" class="mt-3 hidden">
+  <label>Admission Number</label>
+  <input id="admissionNo" class="form-control">
+</div>
+
+<div id="roleBox" class="mt-3 hidden">
+  <label>Employee Role</label>
+  <select id="designation" class="input"></select>
+
+</div>
+
+
+<label class="mt-4">Title</label>
+<input name="title" class="form-control">
+
+<label class="mt-4">Message</label>
+
+<!-- Toolbar -->
+<div class="editor-toolbar">
+  <button type="button" onclick="format('bold')"><b>B</b></button>
+  <button type="button" onclick="format('italic')"><i>I</i></button>
+  <button type="button" onclick="format('underline')"><u>U</u></button>
+  <button type="button" onclick="format('insertUnorderedList')">• List</button>
+
+  <select onchange="setFontSize(this.value)">
+    <option value="">Size</option>
+    <option value="2">Small</option>
+    <option value="3">Normal</option>
+    <option value="4">Large</option>
+    <option value="5">X-Large</option>
+  </select>
+
+  <input type="color" onchange="setColor(this.value)" title="Text Color">
+</div>
+
+<!-- Editable area -->
+<div id="editor"
+     contenteditable="true"
+     class="editor-box"
+     placeholder="Write your message here...">
+</div>
+
+<!-- Important toggle -->
+<div class="mt-4 flex items-center gap-3">
+  <input
+    type="checkbox"
+    id="importantToggle"
+    class="important-checkbox"
+  />
+  <label for="importantToggle" class="important-label">
+    ⚠️ Mark as Important
+  </label>
+</div>
+
+<!-- Hidden field sent to backend -->
+<input type="hidden" name="message" id="messageInput">
+
+<label class="mt-4">Attachments</label>
+<input type="file" name="files" multiple>
+
+<button type="submit" class="btn btn-submit mt-6">
+Send Message
+</button>
+
+</form>
+</div>
+</div>
+<!-- <script>
+document.getElementById("messageForm").onsubmit = async (e) => {
+    e.preventDefault();
+
+    const form = new FormData(e.target);
+
+    form.append("send_scope", document.getElementById("sendScope").value);
+    form.append("class_id", document.getElementById("classId").value);
+
+    if (document.getElementById("sendScope").value === "class_section") {
+        form.append("section", document.getElementById("section").value);
+    }
+
+    const res = await fetch(
+        "https://erp.backend.smartbus360.com/messages/send",
+        {
+            method: "POST",
+            headers: {
+                Authorization: "Bearer " + window.ACCESS_TOKEN
+            },
+            body: form
+        }
+    );
+
+    const btn = document.querySelector(".btn-submit");
+btn.classList.add("btn-loading");
+btn.innerText = "Sending...";
+
+if (res.ok) {
+  btn.innerText = "Sent ✓";
+  setTimeout(() => {
+    window.location.href = "/messages/inbox/";
+  }, 600);
+} else {
+  btn.classList.remove("btn-loading");
+  btn.innerText = "Send Message";
+}
+// } else {
+//         const err = await res.json();
+//         alert(err.detail || "Failed to send message");
+// }
+
+};
+</script> -->
+<script>
+function format(cmd) {
+  document.execCommand(cmd, false, null);
+}
+
+function setFontSize(size) {
+  if (size) document.execCommand("fontSize", false, size);
+}
+
+function setColor(color) {
+  document.execCommand("foreColor", false, color);
+}
+</script>
+
+<script>
+const sendScope = document.getElementById("sendScope");
+const classIdEl = document.getElementById("classId");
+const sectionEl = document.getElementById("section");
+const admissionNo = document.getElementById("admissionNo");
+const employeeRole = document.getElementById("designation");
+
+const classBox = document.getElementById("classBox");
+const sectionBox = document.getElementById("sectionBox");
+const admissionBox = document.getElementById("admissionBox");
+const roleBox = document.getElementById("roleBox");
+
+document.getElementById("messageForm").onsubmit = async (e) => {
+  e.preventDefault();
+
+  const scope = sendScope.value;
+  const classId = classIdEl.value;
+  const section = sectionEl.value;
+
+const editorContent = document.getElementById("editor").innerHTML.trim();
+
+  if (!scope) return alert("Please select message scope");
+
+  if (["class", "class_section", "class_students"].includes(scope) && !classId) {
+    return alert("Please select class");
+  }
+
+  if (scope === "class_section" && !section) {
+    return alert("Please select section");
+  }
+
+  if (scope === "student_admission" && !admissionNo.value) {
+    return alert("Please enter admission number");
+  }
+
+  if (scope === "employees_by_role") {
+    roleBox.classList.remove("hidden");
+    loadRoles(); // ✅ ADD THIS LINE
+  }
+
+
+  
+  if (!editorContent || editorContent === "<br>") {
+    return alert("Message cannot be empty");
+  }
+
+  document.getElementById("messageInput").value = editorContent;
+
+  /* ✅ CREATE FORM HERE */
+  const form = new FormData(e.target);
+
+  if (document.getElementById("importantToggle").checked) {
+    form.append("category", "important");
+  }
+
+  form.append("send_scope", scope);
+
+  if (classId) form.append("class_id", classId);
+  if (scope === "class_section") form.append("section", section);
+  if (scope === "student_admission") {
+  form.append("admission_no", admissionNo.value);
+}
+
+if (scope === "employees_by_role") {
+  form.append("role", employeeRole.value);
+}
+
+if (scope === "class_students") {
+  form.append("category", `class:${classId}`);
+}
+
+
+  const btn = document.querySelector(".btn-submit");
+  btn.classList.add("btn-loading");
+  btn.innerText = "Sending...";
+
+  const res = await fetch(
+    "https://erp.backend.smartbus360.com/messages/send",
+    {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + window.ACCESS_TOKEN
+      },
+      body: form
+    }
+  );
+
+  if (res.ok) {
+    btn.innerText = "Sent ✓";
+    setTimeout(() => location.href = "/messages/inbox/", 600);
+  } else {
+    btn.classList.remove("btn-loading");
+    btn.innerText = "Send Message";
+    const err = await res.json();
+    alert(err.detail || "Failed to send message");
+  }
+};
+</script>
+
+<script>
+function handleScopeChange() {
+  const scope = sendScope.value;
+
+  classBox.classList.add("hidden");
+  sectionBox.classList.add("hidden");
+  admissionBox.classList.add("hidden");
+  roleBox.classList.add("hidden");
+
+  if (["class", "class_section", "class_students"].includes(scope)) {
+    classBox.classList.remove("hidden");
+    loadClasses();
+  }
+
+  if (scope === "class_section") {
+    sectionBox.classList.remove("hidden");
+  }
+
+  if (scope === "student_admission") {
+    admissionBox.classList.remove("hidden");
+  }
+
+  if (scope === "employees_by_role") {
+    roleBox.classList.remove("hidden");
+    loadRoles(); // ✅ ADD THIS LINE
+  }
+
+}
+
+</script>
+<script>
+async function loadClasses() {
+    const res = await fetch("https://erp.backend.smartbus360.com/classes/", {
+        headers: { Authorization: "Bearer " + window.ACCESS_TOKEN }
+    });
+
+    const data = await res.json();
+    const select = document.getElementById("classId");
+
+    select.innerHTML = `<option value="">Select Class</option>`;
+    data.forEach(c => {
+        select.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+    });
+
+    select.onchange = () => {
+        if (document.getElementById("sendScope").value === "class_section") {
+            loadSections(select.value);
+        }
+    };
+}
+</script>
+<script>
+async function loadSections(classId) {
+  const sectionBox = document.getElementById("sectionBox");
+  sectionBox.classList.remove("hidden");
+  sectionBox.classList.add("animate-in");
+
+  const res = await fetch(
+    `https://erp.backend.smartbus360.com/sections/?class_id=${classId}`,
+    { headers: { Authorization: "Bearer " + window.ACCESS_TOKEN } }
+  );
+
+  const sections = await res.json();
+  const select = document.getElementById("section");
+
+  select.innerHTML = `<option value="">Select Section</option>`;
+  sections.forEach(s => {
+    select.innerHTML += `<option value="${s.name}">${s.name}</option>`;
+  });
+}
+
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".card, .form-control, textarea, select")
+    .forEach((el, i) => {
+      el.style.animationDelay = `${i * 40}ms`;
+      el.classList.add("animate-in");
+    });
+});
+</script>
+<script>
+async function loadRoles() {
+  const res = await fetch(
+    "https://erp.backend.smartbus360.com/employees/roles",
+    {
+      headers: { Authorization: "Bearer " + window.ACCESS_TOKEN }
+    }
+  );
+
+  if (!res.ok) {
+    alert("Failed to load roles");
+    return;
+  }
+
+  const roles = await res.json();
+  const select = document.getElementById("designation");
+
+  select.innerHTML = `<option value="">Select Employee Role</option>`;
+  roles.forEach(r => {
+    select.innerHTML += `<option value="${r.name}">${r.name}</option>`;
+  });
+}
+</script>
+
+
+{% endblock %}

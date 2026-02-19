@@ -1,0 +1,128 @@
+<form id="messageForm" enctype="multipart/form-data" class="bg-white p-6 rounded shadow max-w-xl">
+
+    <!-- CATEGORY -->
+    <label class="form-label">Send message to</label>
+    <select id="sendType" class="form-control" onchange="handleTypeChange()">
+        <option value="all_students">All Students</option>
+        <option value="all_employees">All Employees</option>
+        <option value="class">Specific Class</option>
+        <option value="student">Specific Student</option>
+        <option value="employee">Specific Employee</option>
+    </select>
+
+
+<div id="extraTarget" class="mb-3 hidden"></div>
+
+    <!-- DYNAMIC TARGET -->
+    <div id="targetBox" class="mt-4 hidden">
+        <label class="form-label" id="targetLabel"></label>
+        <select id="targetId" class="form-control"></select>
+    </div>
+
+    <!-- MESSAGE -->
+    <label class="form-label mt-4">Message</label>
+    <textarea class="form-control" name="message" maxlength="244" required></textarea>
+
+    <!-- ATTACH -->
+    <label class="form-label mt-4">Attachment</label>
+    <input type="file" name="files" multiple>
+
+    <!-- SEND -->
+    <button class="btn btn-submit mt-6 w-full">
+        Send Message
+    </button>
+
+</form>
+<script>
+function handleTypeChange() {
+    const type = document.getElementById("sendType").value;
+    const box = document.getElementById("targetBox");
+    const label = document.getElementById("targetLabel");
+    const select = document.getElementById("targetId");
+
+    box.classList.add("hidden");
+    select.innerHTML = "";
+
+    if (type === "class") {
+        label.innerText = "Select Class";
+        fetchOptions("/classes/", "name");
+    }
+
+    if (type === "student") {
+        label.innerText = "Select Student";
+        fetchOptions("/students/", "name");
+    }
+
+    if (type === "employee") {
+        label.innerText = "Select Employee";
+        fetchOptions("/employees/", "name");
+    }
+}
+
+async function fetchOptions(api, labelKey) {
+    const res = await fetch(`https://erp.backend.smartbus360.com${api}`, {
+        headers: {
+            Authorization: "Bearer " + window.ACCESS_TOKEN
+        }
+    });
+
+    const data = await res.json();
+    const select = document.getElementById("targetId");
+
+    data.forEach(item => {
+        select.innerHTML += `<option value="${item.id}">
+            ${item[labelKey]}
+        </option>`;
+    });
+
+    document.getElementById("targetBox").classList.remove("hidden");
+}
+</script>
+<script>
+document.getElementById("messageForm").onsubmit = async (e) => {
+    e.preventDefault();
+
+    const form = new FormData(e.target);
+    form.append("send_type", document.getElementById("sendType").value);
+    form.append("target_id", document.getElementById("targetId")?.value || "");
+
+    const res = await fetch("https://erp.backend.smartbus360.com/messages/send", {
+        method: "POST",
+        headers: {
+            Authorization: "Bearer " + window.ACCESS_TOKEN
+        },
+        body: form
+    });
+
+    if (res.ok) {
+        alert("Message sent");
+        location.reload();
+    } else {
+        alert("Failed to send");
+    }
+};
+</script>
+<script>
+function handleSendTo() {
+    const type = document.getElementById("sendTo").value;
+    const box = document.getElementById("extraTarget");
+
+    box.innerHTML = "";
+    box.classList.add("hidden");
+
+    if (type === "class") {
+        box.innerHTML = `<select class="form-control">...</select>`;
+        box.classList.remove("hidden");
+    }
+
+    if (type === "student") {
+        box.innerHTML = `<select class="form-control">...</select>`;
+        box.classList.remove("hidden");
+    }
+
+    if (type === "employee") {
+        box.innerHTML = `<select class="form-control">...</select>`;
+        box.classList.remove("hidden");
+    }
+}
+</script>

@@ -1,0 +1,358 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<div class="p-6">
+    <h2 class="text-lg font-semibold mb-4">
+        Employees | Manage Login
+    </h2>
+
+    <div class="grid grid-cols-12 gap-6">
+
+        <!-- LEFT SEARCH PANEL -->
+        <div class="col-span-4 bg-white rounded-xl p-6 shadow">
+            <h3 class="text-lg font-semibold mb-4">🔍 Search</h3>
+
+            <div class="mb-4">
+                <label class="text-sm">Search Employee*</label>
+<input id="searchInput"
+       type="text"
+       class="w-full mt-1 px-4 py-2 border rounded-full"
+       placeholder="Search Employee">
+
+            </div>
+
+            <div class="mb-4">
+                <label class="text-sm">Select Role*</label>
+<select id="roleFilter"
+        class="w-full mt-1 px-4 py-2 border rounded-full">
+                    <option>Select*</option>
+<option value="">All</option>
+<option>Teacher</option>
+<option>Staff</option>
+<option>Accountant</option>
+<option>Admin</option>
+
+                </select>
+            </div>
+
+<a href="#" id="reloadAll" class="text-indigo-500 text-sm">
+    or, Reload All
+</a>
+        </div>
+
+        <!-- RIGHT TABLE PANEL -->
+        <div class="col-span-8 bg-white rounded-xl p-6 shadow">
+
+            <!-- EXPORT BAR -->
+            <div class="flex justify-between items-center mb-4">
+                <div class="space-x-2">
+                    <button class="table-btn">Copy</button>
+                    <button class="table-btn">CSV</button>
+                    <button class="table-btn">Excel</button>
+                    <button class="table-btn">PDF</button>
+                    <button class="table-btn">Print</button>
+                </div>
+
+                <input type="text"
+                       placeholder="Search:"
+                       class="border px-3 py-1 rounded">
+            </div>
+
+            <!-- TABLE -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th>ID</th>
+                            <th>Staff Name</th>
+                            <th>Role</th>
+                            <th>Username</th>
+                            <th>Password</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="employeeTableBody">
+    <!-- rows injected by JS -->
+     
+
+
+</tbody>
+
+                </table>
+            </div>
+<!-- PERMISSION MODAL -->
+<div id="permissionModal"
+     class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+
+    <div class="bg-white rounded-xl w-96 p-6">
+        <h3 class="text-lg font-semibold mb-4">Manage Permissions</h3>
+
+        <div class="space-y-2">
+            <label><input type="checkbox" id="perm_students"> Students</label><br>
+            <label><input type="checkbox" id="perm_attendance"> Attendance</label><br>
+            <label><input type="checkbox" id="perm_exams"> Exams</label><br>
+            <label><input type="checkbox" id="perm_homework"> Homework</label>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-4">
+            <button onclick="closePermissionModal()"
+                    class="px-3 py-1 bg-gray-200 rounded">
+                Cancel
+            </button>
+<button onclick="savePermissionChanges()"
+        class="px-3 py-1 bg-blue-600 text-white rounded">
+    Save
+</button>
+
+        </div>
+    </div>
+</div>
+
+            <p class="text-sm mt-4">
+                Showing 1 to 1 of 1 entries
+            </p>
+        </div>
+
+    </div>
+</div>
+
+<script>
+const tbody = document.getElementById("employeeTableBody");
+const searchInput = document.getElementById("searchInput");
+const roleFilter = document.getElementById("roleFilter");
+const reloadAll = document.getElementById("reloadAll");
+
+async function loadEmployees(search = "", role = "") {
+
+    let url = "https://erp.backend.smartbus360.com/employees/";
+    const params = [];
+
+    if (search) params.push(`search=${encodeURIComponent(search)}`);
+    if (role && role !== "Select*") params.push(`role=${encodeURIComponent(role)}`);
+
+    if (params.length) {
+        url += "?" + params.join("&");
+    }
+
+    const res = await fetch(url, {
+        headers: {
+            "Authorization": "Bearer " + window.ACCESS_TOKEN
+
+        }
+    });
+
+    const employees = await res.json();
+    renderEmployees(employees);
+}
+
+function renderEmployees(employees) {
+    tbody.innerHTML = "";
+
+    employees.forEach(emp => {
+        tbody.innerHTML += `
+        <tr class="border-t">
+            <td>${emp.id}</td>
+            <td>${emp.name}</td>
+            <td>${emp.designation || ""}</td>
+
+            <!-- USERNAME -->
+            <td>
+                ${emp.has_login
+                    ? emp.login_email
+                    : "<span class='text-red-500'>Not Created</span>"
+                }
+            </td>
+
+            <!-- PASSWORD / STATUS -->
+            <td>
+                ${emp.has_login
+                    ? (emp.is_active
+                        ? "<span class='text-green-600'>Active</span>"
+                        : "<span class='text-red-600'>Disabled</span>")
+                    : `<button class="text-indigo-600"
+                              onclick="createLogin(${emp.id})">
+                          Create
+                       </button>`
+                }
+            </td>
+
+            <!-- ACTIONS -->
+<td class="space-x-2">
+
+    ${emp.has_login
+        ? `
+            <button onclick="openPermissionModal(${emp.id})"
+                class="text-indigo-600">Permissions</button>
+
+            <button onclick="toggleLogin(${emp.id})"
+                class="${emp.is_active ? 'text-green-600' : 'text-red-600'}">
+                ${emp.is_active ? 'Active' : 'Inactive'}
+            </button>
+
+            <button onclick="changePassword(${emp.id})"
+                class="text-blue-600">Change</button>
+        `
+        : `<button onclick="createLogin(${emp.id})"
+            class="text-indigo-600">Create</button>`
+    }
+
+</td>
+
+
+        </tr>
+        `;
+    });
+}
+
+/* EVENTS */
+searchInput.addEventListener("input", () => {
+    loadEmployees(searchInput.value, roleFilter.value);
+});
+
+roleFilter.addEventListener("change", () => {
+    loadEmployees(searchInput.value, roleFilter.value);
+});
+
+reloadAll.addEventListener("click", (e) => {
+    e.preventDefault();
+    searchInput.value = "";
+    roleFilter.value = "Select*";
+    loadEmployees();
+});
+
+/* INITIAL LOAD */
+document.addEventListener("DOMContentLoaded", () => {
+    loadEmployees();
+});
+
+/* CREATE LOGIN */
+async function createLogin(employeeId) {
+    const email = prompt("Enter email");
+    const password = prompt("Enter password");
+
+    if (!email || !password) return;
+
+    const res = await fetch(
+        `https://erp.backend.smartbus360.com/employees/${employeeId}/create-login`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + window.ACCESS_TOKEN
+
+            },
+            body: JSON.stringify({ email, password })
+        }
+    );
+
+    const data = await res.json();
+    alert(data.message);
+    loadEmployees();
+}
+
+/* SAVE PERMISSIONS */
+
+
+
+
+
+let currentEmployeeId = null;
+
+async function openPermissionModal(employeeId) {
+    currentEmployeeId = employeeId;
+
+    const res = await fetch(
+        `https://erp.backend.smartbus360.com/employees/${employeeId}/permissions`,
+        {
+            headers: {
+                "Authorization": "Bearer " + window.ACCESS_TOKEN
+
+            }
+        }
+    );
+
+    const perm = await res.json();
+
+document.getElementById("perm_students").checked = perm.can_students;
+document.getElementById("perm_attendance").checked = perm.can_attendance;
+document.getElementById("perm_exams").checked = perm.can_exams;
+document.getElementById("perm_homework").checked = perm.can_homework;
+
+    document.getElementById("permissionModal").classList.remove("hidden");
+}
+
+function closePermissionModal() {
+    document.getElementById("permissionModal").classList.add("hidden");
+}
+
+async function savePermissionChanges() {
+    const payload = {
+  can_students: document.getElementById("perm_students").checked,
+  can_attendance: document.getElementById("perm_attendance").checked,
+  can_exams: document.getElementById("perm_exams").checked,
+  can_homework: document.getElementById("perm_homework").checked
+};
+
+
+    await fetch(
+        `https://erp.backend.smartbus360.com/employees/${currentEmployeeId}/permissions`,
+        {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                 "Authorization": "Bearer " + window.ACCESS_TOKEN  , // correct
+           },
+            body: JSON.stringify(payload)
+        }
+    );
+
+    alert("Permissions updated");
+    closePermissionModal();
+}
+
+
+
+
+async function toggleLogin(employeeId) {
+    const res = await fetch(
+        `https://erp.backend.smartbus360.com/employees/${employeeId}/toggle-login`,
+        {
+            method: "PUT",
+            headers: {
+                "Authorization": "Bearer " + window.ACCESS_TOKEN
+
+            }
+        }
+    );
+
+    const data = await res.json();
+    alert(data.message);
+    loadEmployees();
+}
+async function changePassword(employeeId) {
+    const newPassword = prompt("Enter new password");
+
+    if (!newPassword) return;
+
+    const res = await fetch(
+        `https://erp.backend.smartbus360.com/employees/${employeeId}/change-password`,
+        {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + window.ACCESS_TOKEN
+
+            },
+            body: JSON.stringify({ password: newPassword })
+        }
+    );
+
+    const data = await res.json();
+    alert(data.message || "Password updated");
+}
+
+
+</script>
+
+{% endblock %}

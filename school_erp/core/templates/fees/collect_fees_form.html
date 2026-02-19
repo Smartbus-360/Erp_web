@@ -1,0 +1,265 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="p-6 bg-gray-50 min-h-screen">
+
+    <!-- Breadcrumb -->
+    <div class="mb-4 text-sm text-gray-500">
+        <span class="font-medium text-gray-700">Fees</span>
+        <span class="mx-2">›</span>
+        <span>Collect Fees</span>
+    </div>
+
+    <!-- Card -->
+    <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-sm p-8">
+<form id="collectFeesForm">
+<input type="hidden" id="student_fee_id">
+<input type="hidden" id="total_amount">
+<input type="hidden" id="paid_amount">
+
+        <!-- Title -->
+        <h2 class="text-xl font-semibold text-center mb-1">
+            Fees Collection
+        </h2>
+
+        <div class="flex justify-center gap-4 text-xs mb-6">
+            <div class="flex items-center gap-1 text-blue-600">
+                <span class="w-3 h-1 rounded bg-blue-600"></span> Required*
+            </div>
+            <div class="flex items-center gap-1 text-gray-400">
+                <span class="w-3 h-1 rounded bg-gray-400"></span> Optional
+            </div>
+        </div>
+
+        <!-- Student Info -->
+<div id="studentInfo" class="grid grid-cols-4 gap-4 text-sm mb-6 text-center"></div>
+
+        <!-- Month & Date -->
+        <div class="grid grid-cols-2 gap-6 mb-6">
+            <div class="relative">
+                <label class="absolute -top-2 left-4 bg-white px-2 text-xs text-blue-600 font-semibold">
+                    Fees Month*
+                </label>
+<input
+    type="month"
+    id="feeMonth"
+    class="w-full px-5 py-3 border border-blue-300 rounded-full focus:ring-2 focus:ring-blue-200"
+    required
+/>
+
+            </div>
+
+            <div class="relative">
+                <label class="absolute -top-2 left-4 bg-white px-2 text-xs text-blue-600 font-semibold">
+                    Date*
+                </label>
+<input
+    type="date"
+    id="paymentDate"
+    class="w-full px-5 py-3 border border-blue-300 rounded-full focus:ring-2 focus:ring-blue-200"
+/>
+
+            </div>
+        </div>
+
+        <!-- Fees Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm border">
+                <thead class="bg-gray-100 text-gray-700">
+                    <tr>
+                        <th class="p-2 text-left">Sr.</th>
+                        <th class="p-2 text-left">Particulars</th>
+                        <th class="p-2 text-right">Amount</th>
+                    </tr>
+                </thead>
+<tbody id="feesTableBody" class="divide-y"></tbody>
+
+                    <tr class="font-semibold bg-gray-50">
+    <td colspan="2" class="p-2 text-right">TOTAL</td>
+    <td class="p-2 text-right" id="totalCell">0</td>
+</tr>
+<tr>
+    <td colspan="2" class="p-2 text-right">DEPOSIT</td>
+    <td class="p-2 text-right">
+        <input type="number" id="depositAmount"
+               class="w-24 px-2 py-1 border rounded text-right"
+               required>
+    </td>
+</tr>
+<tr class="font-semibold">
+    <td colspan="2" class="p-2 text-right">DUE BALANCE</td>
+    <td class="p-2 text-right text-red-600" id="dueCell">0</td>
+</tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Submit -->
+        <div class="flex justify-center mt-8">
+           <button type="submit"
+    class="bg-orange-400 hover:bg-orange-500 text-white font-semibold px-8 py-3 rounded-full">
+    ✔ Submit Fees
+</button>
+
+        </div>
+
+    </div>
+    </form>
+</div>
+<!-- <script>
+    
+    const urlParams = new URLSearchParams(window.location.search);
+const studentFeeId = urlParams.get("student_fee_id");
+
+if (!studentFeeId) {
+    alert("Student fee ID missing");
+    throw new Error("student_fee_id not found in URL");
+}
+const token = localStorage.getItem("access_token");
+
+if (!token) {
+    alert("Session expired. Please login again.");
+    window.location.href = "/login";
+    throw new Error("Missing access token");
+}
+
+// if (!token) {
+//     alert("Session expired. Please login again.");
+//     // throw new Error("Missing access token");
+// }
+
+fetch(`https://erp.backend.smartbus360.com/fees/invoice/${studentFeeId}`, {
+    headers: {
+        "Authorization": `Bearer ${token}`
+    }
+})
+
+.then(res => res.json())
+.then(data => {
+
+    document.getElementById("student_fee_id").value = studentFeeId;
+    document.getElementById("total_amount").value = data.total;
+    document.getElementById("paid_amount").value = data.paid;
+
+    document.getElementById("studentInfo").innerHTML = `
+        <div><div class="text-gray-400">Admission</div><div class="font-semibold">${data.student.admission_no}</div></div>
+        <div><div class="text-gray-400">Name</div><div class="font-semibold">${data.student.name}</div></div>
+        <div><div class="text-gray-400">Class</div><div class="font-semibold">${data.student.class}</div></div>
+        <div><div class="text-gray-400">Section</div><div class="font-semibold">${data.student.section}</div></div>
+    `;
+
+    let rows = "";
+    data.fees.forEach((f, i) => {
+        rows += `
+            <tr>
+                <td class="p-2">${i+1}</td>
+                <td class="p-2">${f.name}</td>
+                <td class="p-2 text-right">${f.amount}</td>
+            </tr>
+        `;
+    });
+
+    document.getElementById("feesTableBody").innerHTML = rows;
+    document.getElementById("totalCell").innerText = data.total;
+    document.getElementById("dueCell").innerText = data.due;
+});
+
+// document.getElementById("collectFeesForm").addEventListener("submit", function(e) {
+//     e.preventDefault();
+
+    fetch("https://erp.backend.smartbus360.com/fees/collect", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({
+        student_fee_id: studentFeeId,
+        amount: document.getElementById("depositAmount").value,
+        payment_mode: "cash",
+        // payment_date: new Date().toISOString().split("T")[0]
+    })
+})
+
+    .then(res => res.json())
+    .then(() => {
+        alert("Fee Collected Successfully");
+window.location.href =
+    `/fees/paid-receipt?student_fee_id=${studentFeeId}`;
+    });
+});
+</script> -->
+<script>
+
+
+
+const urlParams = new URLSearchParams(window.location.search);
+const studentFeeId = urlParams.get("student_fee_id");
+
+if (!studentFeeId) {
+    alert("Student fee ID missing");
+    throw new Error("student_fee_id not found in URL");
+}
+
+// ✅ SET hidden input
+document.getElementById("student_fee_id").value = studentFeeId;
+</script>
+
+<script>
+   
+
+document.getElementById("collectFeesForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const deposit = parseInt(document.getElementById("depositAmount").value);
+    const total = parseInt(document.getElementById("total_amount").value);
+    const paid = parseInt(document.getElementById("paid_amount").value);
+    const due = total - paid;
+
+    const paymentDate = document.getElementById("paymentDate").value;
+
+    if (!deposit || deposit <= 0) {
+        alert("Enter valid deposit amount");
+        return;
+    }
+
+    if (deposit > due) {
+        alert("Deposit cannot be more than due amount");
+        return;
+    }
+
+    if (!paymentDate) {
+        alert("Please select payment date");
+        return;
+    }
+
+    fetch("https://erp.backend.smartbus360.com/fees/collect", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + window.ACCESS_TOKEN,
+        },
+        body: JSON.stringify({
+            student_fee_id: parseInt(document.getElementById("student_fee_id").value),
+            amount: deposit,
+            payment_mode: "cash",
+            payment_date: paymentDate   // ✅ EXACT CURL MATCH
+        })
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("Fee collection failed");
+        return res.json();
+    })
+    .then(() => {
+        alert("Fee Collected Successfully");
+        window.location.href = `/fees/paid-slip?student_fee_id=${document.getElementById("student_fee_id").value}`;
+    })
+    .catch(err => {
+        alert(err.message);
+    });
+});
+</script>
+
+{% endblock %}

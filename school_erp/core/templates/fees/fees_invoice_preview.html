@@ -1,0 +1,95 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<div class="bg-white rounded-xl p-6">
+
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Fees | Fees Invoice</h2>
+
+        <button onclick="window.print()"
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg">
+            Print Fees Invoice
+        </button>
+    </div>
+
+    <!-- Invoice Card -->
+    <div class="border rounded-lg p-6 max-w-4xl mx-auto">
+
+        <div class="grid grid-cols-2 gap-6 text-sm">
+
+            <div>
+<p><strong>Student ID:</strong> <span id="studentId"></span></p>
+<p><strong>Student Name:</strong> <span id="studentName"></span></p>
+<p><strong>Class:</strong> <span id="studentClass"></span></p>
+<p><strong>Fee Month:</strong> <span id="feeMonth"></span></p>
+
+            </div>
+
+            <div>
+                <table class="w-full text-sm border">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="p-2 border">Particulars</th>
+                            <th class="p-2 border">Amount</th>
+                        </tr>
+                    </thead>
+                        <tbody id="feesTableBody"></tbody>
+
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<script>
+
+
+const params = new URLSearchParams(window.location.search);
+const studentFeeId = params.get("student_fee_id");
+
+if (!studentFeeId) {
+    alert("Missing student fee id");
+    throw new Error("student_fee_id missing");
+}
+
+fetch(`https://erp.backend.smartbus360.com/fees/invoice/${studentFeeId}`, {
+    headers: {
+"Authorization": "Bearer " + window.ACCESS_TOKEN    }
+})
+.then(res => res.json())
+.then(data => {
+
+    document.getElementById("studentId").innerText = data.student.id;
+    document.getElementById("studentName").innerText = data.student.name;
+    document.getElementById("studentClass").innerText =
+        data.student.class + " - " + data.student.section;
+
+    document.getElementById("feeMonth").innerText =
+        new Date().toLocaleString("default", { month: "long", year: "numeric" });
+
+    let rows = "";
+    data.fees.forEach(f => {
+        rows += `
+            <tr>
+                <td class="p-2 border">${f.name}</td>
+                <td class="p-2 border">₹ ${f.amount}</td>
+            </tr>
+        `;
+    });
+
+    rows += `
+        <tr class="font-semibold">
+            <td class="p-2 border">TOTAL</td>
+            <td class="p-2 border">₹ ${data.total}</td>
+        </tr>
+    `;
+
+    document.getElementById("feesTableBody").innerHTML = rows;
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<h2 class="text-xl font-semibold mb-6">Class Syllabus</h2>
+
+<div id="syllabusContainer" class="space-y-4"></div>
+
+{% block page_js %}
+<script>
+(async () => {
+    const classId = new URLSearchParams(window.location.search).get("class_id");
+
+    const res = await fetch(
+        `https://erp.backend.smartbus360.com/syllabus/?class_id=${classId}`,
+        {
+            headers: {
+                "Authorization": "Bearer " + window.ACCESS_TOKEN   // correct
+
+            }
+        }
+    );
+
+    const data = await res.json();
+    const container = document.getElementById("syllabusContainer");
+
+    data.forEach(s => {
+        container.innerHTML += `
+            <div class="border rounded-lg p-4 bg-white">
+                <div class="font-semibold text-lg">${s.title}</div>
+                <div class="text-sm text-gray-500 mb-2">
+                    Subject ID: ${s.subject_id}
+                </div>
+                <p class="text-gray-700">${s.description}</p>
+            </div>
+        `;
+    });
+})();
+</script>
+{% endblock %}
+{% endblock %}

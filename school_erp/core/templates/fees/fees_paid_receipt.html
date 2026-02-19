@@ -1,0 +1,168 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .receipt-card, .receipt-card * {
+        visibility: visible;
+    }
+    .receipt-card {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+    .no-print {
+        display: none !important;
+    }
+}
+</style>
+
+<div class="content-wrapper">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-bar">
+        <span class="text-muted">Fees</span>
+        <span class="mx-2">|</span>
+        <span class="fw-semibold">Fees Paid Receipt</span>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex justify-end gap-3 mb-4">
+<button onclick="window.print()" class="btn-outline no-print">
+    <i class="bi bi-printer"></i> Print Receipt
+</button>
+<button onclick="downloadPDF()" class="btn-outline no-print">
+    📄 Download PDF
+</button>
+
+        
+    </div>
+
+    <!-- Receipt Card -->
+    <div class="card receipt-card max-w-lg mx-auto">
+
+        <div class="receipt-header text-center">
+            <i class="bi bi-currency-dollar text-3xl text-green-500"></i>
+            <h2 class="text-xl font-semibold mt-2">Fees Paid Receipt</h2>
+        </div>
+
+        <div class="receipt-body mt-6 space-y-3">
+
+            <div class="receipt-row">
+                <span>Admission Number</span>
+<span class="fw-semibold" id="admissionNo"></span>
+            </div>
+
+            <div class="receipt-row">
+                <span>Class</span>
+<span class="fw-semibold" id="className"></span>
+            </div>
+
+            <div class="receipt-row">
+                <span>Name</span>
+<span class="fw-semibold" id="studentName"></span>
+            </div>
+
+            <div class="receipt-row">
+                <span>Fee Month</span>
+                <span class="fw-semibold" id="feeMonth"></span>
+                <!-- <span class="fw-semibold">December, 2025</span> -->
+            </div>
+
+            <div class="receipt-row">
+                <span>Total Amount</span>
+<span class="fw-semibold" id="totalAmount"></span>
+            </div>
+
+            <div class="receipt-row">
+                <span>Deposit</span>
+<span class="fw-semibold" id="paidAmount"></span>
+            </div>
+
+            <div class="receipt-row">
+                <span>Remaining</span>
+<span class="fw-semibold text-red-500" id="dueAmount"></span>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+<script>
+const params = new URLSearchParams(window.location.search);
+
+const studentFeeId = params.get("student_fee_id");
+const studentId = params.get("student_id");
+const month = params.get("month");
+
+if (!window.ACCESS_TOKEN) {
+    alert("Session expired. Please login again.");
+    window.location.href = "/login/";
+}
+
+if (!studentFeeId) {
+    alert("Receipt not found");
+    throw new Error("Missing student_fee_id");
+}
+
+fetch(`https://erp.backend.smartbus360.com/fees/invoice/${studentFeeId}`, {
+    headers: {
+        Authorization: "Bearer " + window.ACCESS_TOKEN,
+    }
+})
+.then(async res => {
+    const contentType = res.headers.get("content-type") || "";
+
+    if (!contentType.includes("application/json")) {
+        const text = await res.text();
+        console.error("Non-JSON response:", text);
+        throw new Error("Expected JSON but got HTML");
+    }
+
+    return res.json();
+})
+
+.then(data => {
+    document.getElementById("admissionNo").innerText =
+        data.student.admission_no;
+
+    document.getElementById("studentName").innerText =
+        data.student.name;
+
+    document.getElementById("className").innerText =
+        data.student.class + " - " + data.student.section;
+
+    document.getElementById("totalAmount").innerText =
+        "₹ " + data.total;
+
+    document.getElementById("paidAmount").innerText =
+        "₹ " + data.paid;
+
+    document.getElementById("dueAmount").innerText =
+        "₹ " + data.due;
+});
+
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+function downloadPDF() {
+    const element = document.querySelector(".receipt-card");
+
+    const options = {
+        margin: 0.5,
+        filename: 'fees-receipt.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(options).from(element).save();
+}
+</script>
+
+{% endblock %}

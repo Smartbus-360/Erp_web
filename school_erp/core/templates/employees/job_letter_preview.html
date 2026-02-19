@@ -1,0 +1,38 @@
+{% extends "base/base.html" %}
+{% block content %}
+
+<div class="p-6">
+    <h2 class="text-lg font-semibold mb-6">Employees | Job Letter</h2>
+
+    <div class="bg-white rounded-xl shadow p-6 flex justify-between items-center">
+
+        <!-- Left -->
+        <div class="flex gap-6">
+            <div class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">👤</div>
+
+            <div>
+                <h3 class="text-lg font-semibold">wretg</h3>
+                <p class="text-sm text-gray-600 mt-2">Registration ID: 214861</p>
+                <p class="text-sm">Role: Teacher</p>
+                <p class="text-sm">Date of Joining: 16 December, 2025</p>
+                <p class="text-green-600 font-semibold">✔ Active</p>
+            </div>
+        </div>
+
+        <!-- Right -->
+        <div class="text-right text-sm">
+            <p>Portal URL: eskooly.com/bb/signin.php</p>
+            <p>Username: 152379jh4t1</p>
+            <p>Password: 152379jh4t1</p>
+
+            <a href="{% url 'core:job_letter_print' employee_id %}">
+                <button class="mt-4 bg-indigo-500 text-white px-6 py-2 rounded-full">
+                    🖨 Print Job Letter
+                </button>
+            </a>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

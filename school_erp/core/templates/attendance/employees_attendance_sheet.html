@@ -1,0 +1,166 @@
+
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+.status-btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.status-btn.present { background: #e6f4ff; }
+.status-btn.leave   { background: #f3e8ff; }
+.status-btn.absent  { background: #ffe4e6; }
+
+.status-btn.active {
+  border: 2px solid #000;
+  font-weight: bold;
+}
+</style>
+
+
+<div class="content-wrapper">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-bar">
+        <span class="text-muted">Attendance</span>
+        <span class="mx-2">|</span>
+        <span class="fw-semibold">Add / Update Attendance</span>
+    </div>
+
+    <!-- Card -->
+    <div class="card max-w-5xl mx-auto mt-10 p-8">
+
+        <!-- Header -->
+        
+
+           
+
+
+
+
+        <div class="bulk-actions" style="margin-bottom:15px;">
+  <button type="button" onclick="markAll('present')" class="btn btn-success">
+    Mark All Present
+  </button>
+
+  <button type="button" onclick="markAll('absent')" class="btn btn-danger">
+    Mark All Absent
+  </button>
+
+  <button type="button" onclick="clearAll()" class="btn btn-secondary">
+    Clear All
+  </button>
+</div>
+
+        <!-- Table -->
+        <table class="w-full border text-sm">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="p-3 text-left">ID</th>
+                    <th class="p-3 text-left">Employee Name</th>
+                    <th class="p-3 text-left">Father Name</th>
+                    <th class="p-3 text-left">Employee Role</th>
+                    <th class="p-3 text-center">Status</th>
+                </tr>
+            </thead>
+
+<tbody>
+{% for emp in employees %}
+<tr class="border-t" data-employee-id="{{ emp.id }}">
+
+    <td class="p-3">{{ emp.id }}</td>
+    <td class="p-3">{{ emp.name }}</td>
+    <td class="p-3">{{ emp.father_name }}</td>
+    <td class="p-3">{{ emp.role }}</td>
+
+    <td class="p-3 text-center">
+        <div class="flex justify-center gap-2">
+            <button class="status-btn present"
+                    onclick="setStatus({{ emp.id }}, 'present', this)">P</button>
+
+            <button class="status-btn leave"
+                    onclick="setStatus({{ emp.id }}, 'leave', this)">L</button>
+
+            <button class="status-btn absent"
+                    onclick="setStatus({{ emp.id }}, 'absent', this)">A</button>
+        </div>
+    </td>
+
+</tr>
+{% endfor %}
+</tbody>
+        </table>
+
+        <!-- Update Button -->
+<button class="btn btn-submit px-10" onclick="submitAttendance()">
+    ⟳ Update
+</button>
+
+
+    </div>
+
+</div>
+<script>
+let attendanceData = {}; // employee_id -> status
+
+function setStatus(employeeId, status, btn) {
+  attendanceData[employeeId] = status;
+
+  // reset buttons in same row
+  const row = btn.closest("tr");
+  row.querySelectorAll(".status-btn").forEach(b =>
+    b.classList.remove("active")
+  );
+
+  btn.classList.add("active");
+}
+
+function markAll(status) {
+  document.querySelectorAll("tr[data-employee-id]").forEach(row => {
+    const empId = row.dataset.employeeId;
+    const btn = row.querySelector(`.status-btn.${status}`);
+    if (btn) btn.click();
+  });
+}
+
+function clearAll() {
+  attendanceData = {};
+  document.querySelectorAll(".status-btn").forEach(btn =>
+    btn.classList.remove("active")
+  );
+}
+
+async function submitAttendance() {
+const token = "{{ request.session.auth.access_token }}";
+const date = new Date().toISOString().split("T")[0];
+
+  if (Object.keys(attendanceData).length === 0) {
+    alert("Please mark attendance first");
+    return;
+  }
+
+  for (const empId in attendanceData) {
+    await fetch("https://erp.backend.smartbus360.com/attendance/employees", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + window.ACCESS_TOKEN,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        employee_id: parseInt(empId),
+        date: date,
+        status: attendanceData[empId]
+      })
+    });
+  }
+
+  alert("Attendance updated successfully");
+  location.reload();
+}
+</script>
+
+{% endblock %}

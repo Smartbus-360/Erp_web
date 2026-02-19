@@ -1,0 +1,232 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="content-wrapper">
+    <div class="page-container">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-4">
+            <div class="breadcrumb-bar">
+                <span class="fw-semibold">Homework</span>
+                <span class="mx-2">|</span>
+                <span class="text-muted">Homeworks</span>
+            </div>
+
+            <button
+                onclick="openHomeworkModal()"
+                class="bg-blue-500 text-white px-4 py-2 rounded-full text-sm flex items-center gap-2">
+                <i class="ri-add-line"></i>
+                Add Homework
+            </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="card attendance-card mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+                <div>
+                    <label class="text-xs text-gray-500">Homework Date*</label>
+<input type="date" id="filterDate" class="table-search w-full">
+                </div>
+
+                <div>
+                    <label class="text-xs text-gray-500">Class*</label>
+<select id="filterClass" class="table-search w-full">
+    <option value="">All classes</option>
+</select>
+
+                </div>
+
+                <div>
+                    <label class="text-xs text-gray-500">Teacher*</label>
+<select id="filterTeacher" class="table-search w-full"></select>
+
+                </div>
+
+                <div class="flex items-end">
+<button onclick="searchHomework()"
+        class="bg-indigo-500 text-white px-6 py-2 rounded-full text-sm">
+    Search
+</button>
+
+                </div>
+
+            </div>
+        </div>
+<!-- HOMEWORK LIST CONTAINER -->
+<div id="homeworkList"></div>
+
+        <!-- Homework Card -->
+        
+
+<!-- MODAL -->
+{% include "homework/add_homework_modal.html" %}
+<script>
+async function searchHomework() {
+    const date = document.getElementById("filterDate").value;
+    const cls = document.getElementById("filterClass").value;
+    const teacher = document.getElementById("filterTeacher").value;
+
+    let params = [];
+
+    if (date) params.push(`homework_date=${date}`);
+if (cls !== "") {
+    params.push(`class_id=${cls}`);
+}
+    if (teacher) params.push(`teacher_id=${teacher}`);
+
+    let url = "https://erp.backend.smartbus360.com/homework/";
+    if (params.length) url += "?" + params.join("&");
+
+    const res = await fetch(url, {
+        headers: {
+Authorization: "Bearer " + window.ACCESS_TOKEN
+
+        }
+    });
+
+    const data = await res.json();
+    renderHomework(data);
+}
+
+</script>
+<script>
+function renderHomework(list) {
+    const container = document.getElementById("homeworkList");
+    container.innerHTML = "";
+
+    if (!list.length) {
+        container.innerHTML = `
+            <p class="text-gray-500 text-center mt-4">
+                No homework found
+            </p>
+        `;
+        return;
+    }
+
+    list.forEach(hw => {
+        container.innerHTML += `
+        <div class="card attendance-card mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+
+                <!-- Teacher -->
+                <div class="bg-indigo-600 text-white rounded-xl p-4 text-center">
+                    <i class="ri-user-line text-2xl"></i>
+                    <div class="text-sm mt-1">TEACHER</div>
+<div class="font-semibold">
+    ${hw.teacher_name ?? "Admin"}
+</div>
+
+                </div>
+
+                <!-- Class -->
+                <div class="bg-indigo-400 text-white rounded-xl p-4 text-center">
+                    <i class="ri-building-line text-2xl"></i>
+                    <div class="text-sm mt-1">CLASS</div>
+<div class="font-semibold">
+    ${hw.class_name}${hw.section ? "-" + hw.section : ""}
+</div>
+
+                </div>
+
+                <!-- Date -->
+                <div class="bg-blue-500 text-white rounded-xl p-4 text-center">
+                    <div class="text-sm">Due Date</div>
+                    <div class="text-lg font-bold">${hw.due_date}</div>
+                </div>
+
+                <!-- Subject -->
+                <div class="bg-red-400 text-white rounded-xl p-4 text-center">
+                    <i class="ri-book-open-line text-2xl"></i>
+                    <div class="text-sm mt-1">SUBJECT</div>
+<div class="font-semibold">${hw.subject_name}</div>
+                </div>
+
+                <!-- Homework -->
+                <div>
+                    <div class="text-green-600 font-semibold flex items-center gap-1">
+                        <i class="ri-file-text-line"></i>
+                        Homework
+                    </div>
+                    <p class="text-sm mt-1">${hw.description}</p>
+                </div>
+
+            </div>
+        </div>
+        `;
+    });
+}
+async function submitHomework() {
+    const classId = document.getElementById("hwClass").value;
+    const subjectId = document.getElementById("hwSubject").value;
+    const date = document.getElementById("hwDate").value;
+    const details = document.getElementById("hwDetails").value;
+
+    if (!classId || !subjectId || !date || !details) {
+        alert("All fields are required");
+        return;
+    }
+
+    const payload = {
+        class_id: Number(classId),
+        subject_id: Number(subjectId),
+        title: "Homework",
+        description: details,
+        due_date: date
+    };
+
+    const res = await fetch("https://erp.backend.smartbus360.com/homework/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+Authorization: "Bearer " + window.ACCESS_TOKEN
+
+        },
+        body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+        alert("Failed to add homework");
+        return;
+    }
+
+    alert("Homework added");
+    closeHomeworkModal();
+    searchHomework();
+}
+
+</script>
+<script>
+async function loadHomeworkFilters() {
+
+    // Load classes
+    const clsRes = await fetch("https://erp.backend.smartbus360.com/classes/", {
+        headers: { Authorization: "Bearer " + window.ACCESS_TOKEN, }
+    });
+    const classes = await clsRes.json();
+
+    const clsSelect = document.getElementById("filterClass");
+    clsSelect.innerHTML = `<option value="">All Classes</option>`;
+    classes.forEach(c => {
+        clsSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+    });
+
+    // Load teachers
+    const tRes = await fetch("https://erp.backend.smartbus360.com/employees/?role=Teacher", {
+        headers: { Authorization: "Bearer " + window.ACCESS_TOKEN, }
+    });
+    const teachers = await tRes.json();
+
+    const tSelect = document.getElementById("filterTeacher");
+    tSelect.innerHTML = `<option value="">All Teachers</option>`;
+    teachers.forEach(t => {
+        tSelect.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+    });
+}
+
+document.addEventListener("DOMContentLoaded", loadHomeworkFilters);
+</script>
+
+{% endblock %}

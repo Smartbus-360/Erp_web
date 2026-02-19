@@ -1,0 +1,94 @@
+{% extends "base/layout.html" %}
+{% load static %}
+{% block content %}
+
+<div class="content-wrapper max-w-3xl">
+
+  <!-- <h2 class="text-xl font-semibold mb-6">Create New Exam</h2> -->
+   <h2>Create Exam (Basic Details)</h2>
+<p class="text-gray-500 text-sm">
+  Define the exam. Scheduling will be done section-wise in the next step.
+</p>
+
+
+<form id="createExamForm">
+
+    <div class="mb-4">
+      <label class="form-label">Exam Name</label>
+      <input type="text" name="name" class="form-control" required>
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label">Class</label>
+        <option value="">Select Class</option>
+<select name="class_id" id="classSelect" class="form-control" required>
+  <option value="">Select Class</option>
+</select>
+
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mb-4">
+      <div>
+        <label class="form-label">Start Date</label>
+        <input type="date" name="start_date" class="form-control" required>
+      </div>
+
+      <div>
+        <label class="form-label">End Date</label>
+        <input type="date" name="end_date" class="form-control" required>
+      </div>
+    </div>
+
+    <div class="mb-6">
+      <label class="form-label">Subjects</label>
+      <div class="grid grid-cols-3 gap-2">
+        {% for s in subjects %}
+        <label class="flex items-center gap-2">
+          <input type="checkbox" name="subject_ids" value="{{ s.id }}">
+          {{ s.name }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <button class="btn btn-primary">
+      Save Exam
+    </button>
+
+  </form>
+</div>
+{% block page_js %}
+
+<script src="{% static 'js/exams.js' %}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  if (!token) {
+    window.location.href = "/login/";
+    return;
+  }
+
+  const res = await fetch("https://erp.backend.smartbus360.com/classes/", {
+    headers: {
+      "Authorization": "Bearer " + window.ACCESS_TOKEN
+    }
+  });
+
+  if (!res.ok) {
+    localStorage.clear();
+    window.location.href = "/login/";
+    return;
+  }
+
+  const classes = await res.json();
+  const select = document.getElementById("classSelect");
+
+  classes.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c.id;
+    opt.textContent = c.name;
+    select.appendChild(opt);
+  });
+});
+</script>
+{% endblock %}
+{% endblock %}

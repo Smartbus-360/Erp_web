@@ -1,0 +1,30 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<div class="content-wrapper max-w-4xl mx-auto">
+
+<div class="card p-6">
+<h2 class="text-xl font-semibold">{{ message.title }}</h2>
+
+<p class="text-sm text-gray-500 mb-4">
+From: {{ message.sender_role }} | {{ message.created_at }}
+</p>
+
+<p class="mb-6">{{ message.message }}</p>
+
+{% if message.attachments %}
+<h4 class="font-semibold mb-2">Attachments</h4>
+<ul>
+{% for file in message.attachments %}
+<li>
+<a href="{{ file.file_path }}" target="_blank" class="text-blue-600">
+{{ file.file_name }}
+</a>
+</li>
+{% endfor %}
+</ul>
+{% endif %}
+</div>
+
+</div>
+{% endblock %}

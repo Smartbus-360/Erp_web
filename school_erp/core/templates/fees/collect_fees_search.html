@@ -1,0 +1,203 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="p-6 bg-gray-50 min-h-screen">
+
+    <!-- Breadcrumb -->
+    <div class="mb-4 text-sm text-gray-500">
+        <span class="font-medium text-gray-700">Fees</span>
+        <span class="mx-2">›</span>
+        <span>Collect Fees</span>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-2 mb-6">
+        <button
+            class="px-4 py-2 rounded-t-md bg-white text-blue-600 font-semibold border-b-2 border-blue-600">
+            Student Wise
+        </button>
+        <button
+            class="px-4 py-2 rounded-t-md bg-gray-100 text-gray-600 hover:bg-white">
+            Family Wise
+        </button>
+        <button
+            class="px-4 py-2 rounded-t-md bg-gray-100 text-gray-600 hover:bg-white flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
+                 viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M3 7h18M3 12h18M3 17h18"/>
+            </svg>
+            Scanning Paid Invoices
+        </button>
+    </div>
+
+    <!-- Card -->
+    <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-sm p-8">
+
+        <!-- Title -->
+        <h2 class="text-xl font-semibold text-center mb-1">
+            Collect Fees of a Student
+        </h2>
+
+        <!-- Required / Optional legend -->
+        <div class="flex justify-center gap-4 text-xs mb-6">
+            <div class="flex items-center gap-1 text-blue-600">
+                <span class="w-3 h-1 rounded bg-blue-600"></span> Required*
+            </div>
+            <div class="flex items-center gap-1 text-gray-400">
+                <span class="w-3 h-1 rounded bg-gray-400"></span> Optional
+            </div>
+        </div>
+
+        <!-- Search Student -->
+        <div class="relative">
+            <label
+                class="absolute -top-2 left-4 bg-white px-2 text-xs text-blue-600 font-semibold">
+                Search Student*
+            </label>
+<input
+    type="text"
+    id="studentSearch"
+    placeholder="Search Student"
+    class="w-full px-5 py-4 border border-blue-300 rounded-full
+           focus:outline-none focus:ring-2 focus:ring-blue-200
+           text-gray-700"
+/>
+
+<ul id="studentResults"
+    class="absolute w-full bg-white border rounded mt-2 hidden z-10">
+</ul>
+
+        </div>
+
+    </div>
+</div>
+<script>
+
+
+
+
+
+const input = document.getElementById("studentSearch");
+const results = document.getElementById("studentResults");
+
+input.addEventListener("input", async () => {
+    const query = input.value.trim();
+
+    if (query.length < 2) {
+        results.classList.add("hidden");
+        return;
+    }
+
+    const res = await fetch(
+        `https://erp.backend.smartbus360.com/students/search?q=${query}`,
+        {
+            headers: {
+                "Authorization": "Bearer " + window.ACCESS_TOKEN,
+            }
+        }
+    );
+
+    if (!res.ok) {
+        console.error("Unauthorized or error");
+        return;
+    }
+
+    const data = await res.json();
+    results.innerHTML = "";
+
+    data.forEach(student => {
+        const li = document.createElement("li");
+        li.textContent = `${student.name} (${student.class}-${student.section})`;
+        li.className = "px-4 py-2 hover:bg-gray-100 cursor-pointer";
+        // li.onclick = () => {
+        //     window.location.href =
+        //         `/fees/collect-fees/form?student_id=${student.id}`;
+        // };
+//         li.onclick = async () => {
+//     const res = await fetch("https://erp.backend.smartbus360.com/fees/generate", {
+//         method: "POST",
+//         headers: {
+//             "Authorization": `Bearer ${token}`,
+//             "Content-Type": "application/json"
+//         },
+//         body: JSON.stringify({
+//             student_id: student.id,
+//             class_id: 1   // make dynamic later
+//         })
+//     });
+
+//     if (!res.ok) {
+//         alert("Failed to generate fee");
+//         return;
+//     }
+
+//     const data = await res.json();
+
+    
+
+//     li.onclick = async () => {
+
+//     const res = await fetch("https://erp.backend.smartbus360.com/fees/generate", {
+//         method: "POST",
+//         headers: {
+//             "Authorization": `Bearer ${token}`,
+//             "Content-Type": "application/json"
+//         },
+//         body: JSON.stringify({
+//             student_id: student.id,
+//             class_id: 1
+//         })
+//     });
+
+//     if (!res.ok) {
+//         alert("Failed to generate fee");
+//         return;
+//     }
+
+//     // ✅ DIRECT REDIRECT (no student_fee_id here)
+//     window.location.href =
+//         `/fees/collect-fees/form/?student_id=${student.id}`;
+// };
+
+// };
+li.onclick = async () => {
+
+    // ❗ SAFETY CHECK
+    if (!student.class_id) {
+        alert("Student class_id missing from backend");
+        return;
+    }
+
+    const res = await fetch("https://erp.backend.smartbus360.com/fees/generate", {
+        method: "POST",
+        headers: {
+            "Authorization": "Bearer " + window.ACCESS_TOKEN,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            student_id: parseInt(student.id),
+            class_id: parseInt(student.class_id)
+        })
+    });
+
+    if (!res.ok) {
+        const err = await res.text();
+        console.error(err);
+        alert("Failed to generate fee");
+        return;
+    }
+
+    // ✅ Redirect only AFTER success
+    window.location.href =
+        `/fees/collect-fees/form/?student_id=${student.id}`;
+};
+        results.appendChild(li);
+    });
+
+    results.classList.remove("hidden");
+});
+</script>
+
+{% endblock %}

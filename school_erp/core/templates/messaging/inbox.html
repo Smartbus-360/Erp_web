@@ -1,0 +1,24 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<div class="content-wrapper max-w-5xl mx-auto">
+
+<h2 class="text-xl font-semibold mb-4">Inbox</h2>
+
+<div class="card">
+{% for msg in messages %}
+<a href="{% url 'message_view' msg.id %}"
+   class="block border-b p-4 hover:bg-gray-50 {% if not msg.is_read %}bg-blue-50{% endif %}">
+    <div class="flex justify-between">
+        <span class="font-semibold">{{ msg.title|default:"Message" }}</span>
+        <span class="text-xs text-gray-500">{{ msg.created_at }}</span>
+    </div>
+    <p class="text-sm text-gray-600 truncate">{{ msg.message }}</p>
+</a>
+{% empty %}
+<p class="p-4 text-gray-500">No messages</p>
+{% endfor %}
+</div>
+
+</div>
+{% endblock %}

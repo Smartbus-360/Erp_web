@@ -1,0 +1,198 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    table, table * {
+        visibility: visible;
+    }
+    table {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+}
+</style>
+
+<div class="p-6">
+
+    <!-- Breadcrumb -->
+    <div class="mb-4">
+        <h2 class="text-lg font-semibold">Students | Print Basic List</h2>
+    </div>
+
+    <!-- Filter -->
+<div class="bg-white p-4 rounded-xl shadow mb-6 flex flex-wrap gap-4">
+
+    <div>
+        <label class="block text-sm font-medium mb-1">Class</label>
+        <select id="classFilter"
+                class="w-56 px-4 py-2 border rounded-lg">
+            <option value="">All Classes</option>
+        </select>
+    </div>
+
+    <!-- <div>
+        <label class="block text-sm font-medium mb-1">Section</label>
+        <select id="sectionFilter"
+                class="w-40 px-4 py-2 border rounded-lg">
+            <option value="">All Sections</option>
+        </select>
+    </div> -->
+
+    <div class="flex-1 min-w-[200px]">
+        <label class="block text-sm font-medium mb-1">Search</label>
+        <input id="searchInput"
+               type="text"
+               placeholder="Name / Admission No"
+               class="w-full px-4 py-2 border rounded-lg">
+    </div>
+
+</div>
+
+    </div>
+
+    <!-- Table Card -->
+    <div class="bg-white p-4 rounded-xl shadow">
+
+        <!-- Table Actions -->
+        <div class="flex justify-between items-center mb-4">
+
+            <div class="flex gap-2 flex-wrap">
+                <!-- <button class="px-3 py-1 bg-gray-200 rounded-full text-sm">Copy</button>
+                <button class="px-3 py-1 bg-gray-200 rounded-full text-sm">CSV</button>
+                <button class="px-3 py-1 bg-gray-200 rounded-full text-sm">Excel</button>
+                <button class="px-3 py-1 bg-gray-200 rounded-full text-sm">PDF</button> -->
+<button onclick="window.print()"
+        class="px-3 py-1 bg-gray-200 rounded-full text-sm">
+    Print
+</button>
+                <!-- <button class="px-3 py-1 bg-gray-200 rounded-full text-sm">
+                    Column visibility ▼
+                </button> -->
+            </div>
+
+            <!-- <div class="flex items-center gap-2">
+                <label class="block text-sm font-medium mb-1">Search</label>
+        <input id="searchInput"
+               type="text"
+               placeholder="Name / Admission No"
+               class="w-full px-4 py-2 border rounded-lg">
+            </div> -->
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm border-separate border-spacing-y-2">
+
+                <thead>
+                    <tr class="bg-indigo-500 text-white rounded-full">
+                        <th class="px-3 py-2 rounded-l-full">Sr</th>
+                        <th class="px-3 py-2">ID</th>
+                        <th class="px-3 py-2">Student Name</th>
+                        <th class="px-3 py-2">Father</th>
+                        <th class="px-3 py-2">Class</th>
+                        <th class="px-3 py-2">Fee Remainings</th>
+                        <th class="px-3 py-2 rounded-r-full">Phone</th>
+                    </tr>
+                </thead>
+
+<tbody id="studentsTable"></tbody>
+
+
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex justify-between items-center mt-4 text-sm text-gray-600">
+            <span>Showing 1 to 1 of 1 entries</span>
+
+            <div class="flex items-center gap-2">
+                <button class="px-3 py-1 border rounded">Previous</button>
+                <button class="px-3 py-1 bg-indigo-500 text-white rounded">1</button>
+                <button class="px-3 py-1 border rounded">Next</button>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+<script>
+
+const classSelect = document.getElementById("classFilter");
+const sectionSelect = document.getElementById("sectionFilter");
+const searchInput = document.getElementById("searchInput");
+const tableBody = document.getElementById("studentsTable");
+
+/* Load classes */
+async function loadClasses() {
+    const res = await fetch("https://erp.backend.smartbus360.com/classes/", {
+        headers: { Authorization: "Bearer " + window.ACCESS_TOKEN, }
+    });
+    const data = await res.json();
+
+    data.forEach(cls => {
+        classSelect.innerHTML +=
+            `<option value="${cls.name}">${cls.name}</option>`;
+    });
+}
+
+/* Load students */
+async function loadStudents() {
+    const params = new URLSearchParams();
+
+    if (searchInput.value) params.append("search", searchInput.value);
+    if (classSelect.value) params.append("class_name", classSelect.value);
+
+    const res = await fetch(
+        `https://erp.backend.smartbus360.com/students/?${params.toString()}`,
+        { headers: { Authorization: "Bearer " + window.ACCESS_TOKEN,} }
+    );
+
+    const students = await res.json();
+    renderTable(students);
+}
+
+/* Render table */
+function renderTable(students) {
+    tableBody.innerHTML = "";
+
+    if (!students.length) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center py-4 text-gray-500">
+                    No students found
+                </td>
+            </tr>`;
+        return;
+    }
+
+    students.forEach((s, i) => {
+        tableBody.innerHTML += `
+            <tr class="bg-white shadow">
+                <td class="px-3 py-2">${i + 1}</td>
+                <td class="px-3 py-2">${s.admission_no}</td>
+                <td class="px-3 py-2">${s.name}</td>
+                <td class="px-3 py-2">—</td>
+                <td class="px-3 py-2">${s.class_name} ${s.section || ""}</td>
+                <td class="px-3 py-2 text-red-500 font-semibold">₹ 0</td>
+                <td class="px-3 py-2">—</td>
+            </tr>`;
+    });
+}
+
+/* Events */
+searchInput.addEventListener("input", loadStudents);
+classSelect.addEventListener("change", loadStudents);
+
+/* Init */
+loadClasses();
+loadStudents();
+</script>
+
+{% endblock %}

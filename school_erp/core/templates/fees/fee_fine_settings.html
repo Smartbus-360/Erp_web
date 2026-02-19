@@ -1,0 +1,88 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<div class="max-w-xl mx-auto bg-white rounded-xl shadow p-6">
+
+    <h2 class="text-xl font-semibold mb-4">Late Fee Settings</h2>
+
+    <form id="fineRuleForm" class="space-y-4">
+
+        <!-- Fine Type -->
+        <div>
+            <label class="block text-sm font-medium">Fine Type</label>
+            <select id="fineType" class="w-full border rounded px-3 py-2">
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+            </select>
+        </div>
+
+        <!-- Fine Amount -->
+        <div>
+            <label class="block text-sm font-medium">Fine Amount (₹)</label>
+            <input type="number" id="fineAmount"
+                   class="w-full border rounded px-3 py-2"
+                   required>
+        </div>
+
+        <!-- Grace Days -->
+        <div>
+            <label class="block text-sm font-medium">Grace Days</label>
+            <input type="number" id="graceDays"
+                   class="w-full border rounded px-3 py-2"
+                   value="0">
+        </div>
+
+        <button type="submit"
+                class="bg-blue-600 text-white px-6 py-2 rounded">
+            Save Fine Rule
+        </button>
+
+    </form>
+</div>
+
+<script>
+
+document.getElementById("fineRuleForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const payload = {
+        fine_type: document.getElementById("fineType").value,
+        fine_amount: parseInt(document.getElementById("fineAmount").value),
+        grace_days: parseInt(document.getElementById("graceDays").value)
+    };
+
+    const res = await fetch("https://erp.backend.smartbus360.com/fee-fine/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + window.ACCESS_TOKEN,
+        },
+        body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+        alert("Failed to save fine rule");
+        return;
+    }
+
+    alert("Fine rule saved successfully");
+});
+</script>
+<script>
+fetch("https://erp.backend.smartbus360.com/fee-fine/", {
+    headers: {
+        "Authorization": "Bearer " + window.ACCESS_TOKEN,
+    }
+})
+.then(res => res.json())
+.then(rule => {
+    if (!rule) return;
+
+    document.getElementById("fineType").value = rule.fine_type;
+    document.getElementById("fineAmount").value = rule.fine_amount;
+    document.getElementById("graceDays").value = rule.grace_days;
+});
+</script>
+
+{% endblock %}

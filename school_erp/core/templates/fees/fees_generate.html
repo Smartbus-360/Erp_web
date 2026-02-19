@@ -1,0 +1,173 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<div class="bg-white rounded-xl p-6">
+
+    <!-- Page Title -->
+    <div class="mb-6">
+        <h2 class="text-xl font-semibold">Fees | Generate Fees Invoice</h2>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-2 mb-6">
+        <button class="tab-btn active">Student Wise</button>
+        <button class="tab-btn">Class Wise</button>
+        <button class="tab-btn">Family Wise</button>
+    </div>
+
+    <!-- Card -->
+    <div class="max-w-3xl mx-auto bg-white rounded-xl shadow p-6">
+
+        <h3 class="text-lg font-semibold text-center mb-4">
+            Fees Invoice for Student
+        </h3>
+
+<form id="generateFeesForm">
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                <div>
+                    <label class="label">Fee Month*</label>
+                    <input type="month" class="input" required>
+                </div>
+
+                <div>
+                    <label class="label">Due Date*</label>
+                    <input type="date" class="input" required>
+                </div>
+
+                
+
+                <div>
+                    <label class="label">Select Bank*</label>
+                    <select class="input" required>
+                        <option>ABC</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="label">Search Student*</label>
+<input type="text" id="studentSearch" class="input" placeholder="Search Student" autocomplete="off">
+<input type="hidden" id="student_id">
+<input type="hidden" id="class_id">
+<ul id="studentResults" class="border rounded mt-1 bg-white hidden"></ul>
+
+                </div>
+
+            </div>
+
+            <!-- Copies -->
+            <div class="flex gap-6 mt-4 text-sm">
+                <label><input type="checkbox" checked> Bank Copy</label>
+                <label><input type="checkbox" checked> Student Copy</label>
+                <label><input type="checkbox" checked> Institute Copy</label>
+            </div>
+
+            <!-- Generate -->
+            <div class="text-center mt-6">
+                <button type="submit"
+                    class="bg-yellow-400 hover:bg-yellow-500 px-8 py-2 rounded-lg font-medium">
+                    Generate
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+<script>
+console.log("SESSION TOKEN:", "{{ request.session.access_token }}");
+console.log("ROLE:", "{{ request.session.auth.role }}");
+console.log("TOKEN:", "{{ request.session.auth.access_token }}");
+</script>
+<script>
+    console.log("TOKEN:", localStorage.getItem("access_token"));
+    console.log("ROLE:", localStorage.getItem("user_role"));
+</script>
+<script>
+
+const searchInput = document.getElementById("studentSearch");
+const resultsBox = document.getElementById("studentResults");
+const studentIdInput = document.getElementById("student_id");
+
+searchInput.addEventListener("input", async () => {
+    const q = searchInput.value.trim();
+    if (q.length < 2) {
+        resultsBox.classList.add("hidden");
+        return;
+    }
+
+    const res = await fetch(`https://erp.backend.smartbus360.com/students/search?q=${q}`, {
+        headers: {
+            "Authorization": "Bearer " + window.ACCESS_TOKEN,
+        }
+    });
+
+    if (!res.ok) {
+        console.error("Unauthorized or failed:", await res.text());
+        resultsBox.classList.add("hidden");
+        return;
+    }
+
+    const data = await res.json();
+    if (!Array.isArray(data)) return;
+
+    resultsBox.innerHTML = "";
+
+    data.forEach(s => {
+        const li = document.createElement("li");
+        li.className = "px-3 py-2 hover:bg-gray-100 cursor-pointer";
+        li.textContent = `${s.name} (${s.class}-${s.section})`;
+        li.onclick = () => {
+            searchInput.value = s.name;
+            studentIdInput.value = s.id;
+            document.getElementById("class_id").value = s.class_id; // 👈 IMPORTANT
+            resultsBox.classList.add("hidden");
+        };
+        resultsBox.appendChild(li);
+    });
+
+    resultsBox.classList.remove("hidden");
+});
+</script>
+<script>
+document.getElementById("generateFeesForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const studentId = document.getElementById("student_id").value;
+    const classId = document.getElementById("class_id").value;
+
+    if (!studentId || !classId) {
+        alert("Please select a student");
+        return;
+    }
+
+    const res = await fetch("https://erp.backend.smartbus360.com/fees/generate", {
+        method: "POST",
+        headers: {
+            "Authorization": "Bearer " + window.ACCESS_TOKEN,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            student_id: parseInt(studentId),
+            class_id: parseInt(classId)
+        })
+    });
+
+    if (!res.ok) {
+        const err = await res.text();
+        alert("Failed to generate fees: " + err);
+        return;
+    }
+
+    const data = await res.json();
+
+    alert("Total Fees Amount: ₹" + data.total_amount);
+    window.location.href =
+    `/fees/collect-fees/form/?student_fee_id=${data.student_fee_id}`;
+
+});
+</script>
+
+
+{% endblock %}

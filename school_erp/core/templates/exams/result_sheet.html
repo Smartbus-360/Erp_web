@@ -1,0 +1,83 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<div class="content-wrapper max-w-6xl">
+
+<h2 class="text-xl font-semibold mb-6">Result Sheet</h2>
+
+<form method="get" class="grid grid-cols-3 gap-4 mb-6">
+  <select name="exam_id" class="form-control" onchange="this.form.submit()">
+    <option value="">Exam</option>
+    {% for e in exams %}
+      <option value="{{ e.id }}">{{ e.name }}</option>
+    {% endfor %}
+  </select>
+
+  <select name="class_id" class="form-control" onchange="this.form.submit()">
+    <option value="">Class</option>
+    {% for c in classes %}
+      <option value="{{ c.id }}">{{ c.name }}</option>
+    {% endfor %}
+  </select>
+
+  <select name="section_id" class="form-control" onchange="this.form.submit()">
+    <option value="">Section</option>
+    {% for s in sections %}
+      <option value="{{ s.id }}">{{ s.name }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+{% if students %}
+
+<table class="table w-full border">
+  <thead>
+    <tr>
+      <th>Roll</th>
+      <th>Name</th>
+      {% for sub in subjects %}
+        <th>{{ sub }}</th>
+      {% endfor %}
+      <th>Total</th>
+      <th>%</th>
+    </tr>
+  </thead>
+  <tbody>
+
+{% for s in students %}
+<tr>
+  <td>{{ s.roll_no }}</td>
+  <td>{{ s.name }}</td>
+
+  {% with total=0 %}
+  {% for sub in subjects %}
+    {% with mark=result_map|get_item:s.id|get_item:sub %}
+      <td>{{ mark|default:"-" }}</td>
+    {% endwith %}
+  {% endfor %}
+  {% endwith %}
+
+  <td>
+    {{ result_map|get_item:s.id|dictsort:"1"|sum:"1" }}
+  </td>
+
+  <td>
+    {{ result_map|get_item:s.id|dictsort:"1"|sum:"1"|divisibleby:subjects|length }}%
+  </td>
+</tr>
+{% endfor %}
+
+  </tbody>
+</table>
+
+<button onclick="window.print()" class="btn btn-primary mt-6">
+  Print Result Sheet
+</button>
+
+{% else %}
+<p class="text-gray-500">Select exam, class & section.</p>
+{% endif %}
+
+</div>
+
+{% endblock %}

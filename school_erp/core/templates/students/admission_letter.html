@@ -1,0 +1,209 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="max-w-5xl mx-auto bg-white p-6 rounded-xl shadow">
+
+    <!-- Search -->
+    <div class="mb-6">
+        <input
+    id="searchInput"
+    type="text"
+    placeholder="Search student by name or registration number"
+    class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-400"
+>
+
+    </div>
+
+    <div id="searchResults"
+     class="border rounded-lg mt-2 hidden bg-white max-h-60 overflow-y-auto">
+</div>
+
+    <!-- Admission Card -->
+    <div class="border p-6 rounded-lg flex gap-6 items-start">
+
+        <!-- Photo -->
+        <div class="w-32 h-32 border rounded flex items-center justify-center">
+            <span class="text-gray-400">Photo</span>
+        </div>
+
+        <!-- Details -->
+        <div class="flex-1 text-sm">
+            <div class="flex-1 text-sm">
+    <p><strong>Student Name:</strong> <span id="card_name">—</span></p>
+    <p><strong>Registration No:</strong> <span id="card_reg">—</span></p>
+    <p><strong>Class:</strong> <span id="card_class">—</span></p>
+    <p><strong>Session:</strong> <span id="card_session">—</span></p>
+    <p><strong>Date:</strong> <span id="card_date">—</span></p>
+    <p><strong>Gender:</strong> <span id="card_gender">—</span></p>
+<p><strong>Date of Birth:</strong> <span id="card_dob">—</span></p>
+<p><strong>Caste:</strong> <span id="card_caste">—</span></p>
+<p><strong>Religion:</strong> <span id="card_religion">—</span></p>
+<p><strong>Blood Group:</strong> <span id="card_blood">—</span></p>
+<p><strong>Mobile:</strong> <span id="card_mobile">—</span></p>
+<p><strong>Address:</strong> <span id="card_address">—</span></p>
+
+</div>
+
+        </div>
+
+        <!-- Print -->
+        <div>
+<a id="printBtn" target="_blank">
+                <button class="bg-indigo-600 text-white px-4 py-2 rounded">
+                    Print Admission Letter
+                </button>
+            </a>
+        </div>
+
+    </div>
+
+</div>
+<script>
+async function loadStudent() {
+    const params = new URLSearchParams(window.location.search);
+    const studentId = params.get("student_id");
+
+    if (!studentId) return;
+
+    const res = await fetch(`https://erp.backend.smartbus360.com/students/${studentId}`, {
+        headers: {
+            "Authorization": "Bearer " + window.ACCESS_TOKEN
+
+        }
+    });
+
+    if (!res.ok) {
+        alert("Failed to load student");
+        return;
+    }
+
+    const stu = await res.json();
+
+    // Fill fields
+
+    // Parent section auto open
+    if (stu.father_name || stu.mother_name || stu.guardian_name) {
+        document.getElementById("parentSection").classList.remove("hidden");
+
+        document.getElementById("father_name").value = stu.father_name || "";
+        document.getElementById("father_mobile").value = stu.father_mobile || "";
+        document.getElementById("father_occupation").value = stu.father_occupation || "";
+
+        document.getElementById("mother_name").value = stu.mother_name || "";
+        document.getElementById("mother_mobile").value = stu.mother_mobile || "";
+        document.getElementById("mother_occupation").value = stu.mother_occupation || "";
+
+        document.getElementById("guardian_name").value = stu.guardian_name || "";
+        document.getElementById("guardian_relation").value = stu.guardian_relation || "";
+        document.getElementById("guardian_mobile").value = stu.guardian_mobile || "";
+    }
+}
+
+document.addEventListener("DOMContentLoaded", loadStudent);
+</script>
+<script>
+const params = new URLSearchParams(window.location.search);
+const studentId = params.get("student_id");
+
+if (studentId) {
+    document.getElementById("printBtn").href =
+    `/students/admission-letter/print/${studentId}/`;
+
+}
+</script>
+<script>
+const input = document.getElementById("searchInput");
+const resultsBox = document.getElementById("searchResults");
+
+input.addEventListener("input", async function () {
+    const q = this.value.trim();
+
+    if (q.length < 2) {
+        resultsBox.classList.add("hidden");
+        resultsBox.innerHTML = "";
+        return;
+    }
+
+    const res = await fetch("https://erp.backend.smartbus360.com/students/", {
+        headers: {
+            "Authorization": "Bearer " + window.ACCESS_TOKEN
+
+        }
+    });
+
+    const students = await res.json();
+
+    const filtered = students.filter(s =>
+        s.name.toLowerCase().includes(q.toLowerCase()) ||
+        s.admission_no.toLowerCase().includes(q.toLowerCase())
+    );
+
+    resultsBox.innerHTML = "";
+    resultsBox.classList.remove("hidden");
+
+    if (filtered.length === 0) {
+        resultsBox.innerHTML =
+            `<div class="p-3 text-gray-500">No students found</div>`;
+        return;
+    }
+
+    filtered.forEach(stu => {
+        const div = document.createElement("div");
+        div.className =
+            "p-3 hover:bg-indigo-50 cursor-pointer border-b text-sm";
+        div.innerHTML = `
+            <strong>${stu.name}</strong><br>
+            Reg No: ${stu.admission_no} | Class: ${stu.class_name}
+        `;
+        div.onclick = () => {
+            window.location.href =
+                `/students/admission-letter/?student_id=${stu.id}`;
+        };
+        resultsBox.appendChild(div);
+    });
+});
+</script>
+<script>
+async function loadStudent() {
+    const params = new URLSearchParams(window.location.search);
+    const studentId = params.get("student_id");
+
+    if (!studentId) return;
+
+    const res = await fetch(`https://erp.backend.smartbus360.com/students/${studentId}`, {
+        headers: {
+            "Authorization": "Bearer " + window.ACCESS_TOKEN
+
+        }
+    });
+
+    if (!res.ok) {
+        alert("Failed to load student");
+        return;
+    }
+
+    const stu = await res.json();
+
+    document.getElementById("card_name").innerText = stu.name || "—";
+    document.getElementById("card_reg").innerText = stu.admission_no || "—";
+    document.getElementById("card_class").innerText =
+        stu.class_name + (stu.section ? "-" + stu.section : "");
+    document.getElementById("card_gender").innerText = stu.gender || "—";
+document.getElementById("card_dob").innerText = stu.dob || "—";
+document.getElementById("card_caste").innerText = stu.caste || "—";
+document.getElementById("card_religion").innerText = stu.religion || "—";
+document.getElementById("card_blood").innerText = stu.blood_group || "—";
+document.getElementById("card_mobile").innerText = stu.mobile || "—";
+document.getElementById("card_address").innerText = stu.address || "—";
+    document.getElementById("card_session").innerText = "2025–26";
+    document.getElementById("card_date").innerText =
+        new Date().toLocaleDateString("en-GB");
+}
+
+document.addEventListener("DOMContentLoaded", loadStudent);
+</script>
+
+
+{% endblock %}

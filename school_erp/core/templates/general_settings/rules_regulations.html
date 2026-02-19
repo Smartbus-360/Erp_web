@@ -1,0 +1,95 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<!-- Quill Editor CDN -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
+<div class="bg-gray-100 min-h-screen">
+
+    <!-- Breadcrumb -->
+    <div class="bg-white rounded-lg px-6 py-3 mb-6 shadow-sm">
+        <h2 class="text-gray-700 font-semibold text-sm">
+            General Settings
+            <span class="mx-2">|</span>
+            <span class="text-gray-500">Rules & Regulations</span>
+        </h2>
+    </div>
+
+    <!-- Page Title -->
+    <div class="text-center mb-6">
+        <h1 class="text-2xl font-semibold text-gray-800">
+            Institute Rules & Regulations
+        </h1>
+
+        <div class="flex justify-center gap-4 mt-2 text-sm">
+            <span class="flex items-center gap-2 text-indigo-600">
+                <span class="w-4 h-1 bg-indigo-600 rounded"></span> Required
+            </span>
+            <span class="flex items-center gap-2 text-gray-400">
+                <span class="w-4 h-1 bg-gray-300 rounded"></span> Optional
+            </span>
+        </div>
+    </div>
+
+    <!-- Editor Card -->
+    <div class="bg-white max-w-5xl mx-auto rounded-xl p-6 shadow-sm">
+
+        <label class="text-sm font-semibold text-indigo-600">
+            Rules & Regulations*
+        </label>
+
+        <!-- Toolbar -->
+        <div id="toolbar" class="border border-gray-300 rounded-t-lg mt-2">
+            <span class="ql-formats">
+                <button class="ql-bold"></button>
+                <button class="ql-underline"></button>
+                <button class="ql-italic"></button>
+            </span>
+
+            <span class="ql-formats">
+                <select class="ql-color"></select>
+                <select class="ql-size">
+                    <option value="small"></option>
+                    <option selected></option>
+                    <option value="large"></option>
+                    <option value="huge"></option>
+                </select>
+            </span>
+
+            <span class="ql-formats">
+                <button class="ql-list" value="ordered"></button>
+                <button class="ql-list" value="bullet"></button>
+            </span>
+        </div>
+
+        <!-- Editor -->
+        <div id="editor"
+             class="border border-t-0 border-gray-300 rounded-b-lg min-h-[300px]">
+        </div>
+
+        <!-- Save Button -->
+        <div class="flex justify-center mt-6">
+            <button
+                class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-8 py-3 rounded-full flex items-center gap-2">
+                <i class="ri-check-line"></i>
+                Save Changes
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Quill JS -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+<script>
+    var quill = new Quill('#editor', {
+        theme: 'snow',
+        modules: {
+            toolbar: '#toolbar'
+        }
+    });
+</script>
+
+{% endblock %}

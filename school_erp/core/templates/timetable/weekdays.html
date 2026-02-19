@@ -1,0 +1,81 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<h2 class="text-xl font-semibold mb-6">Weekdays</h2>
+
+<!-- Add Weekday -->
+<div class="bg-white rounded-lg p-4 mb-6 w-96">
+    <label class="block text-sm font-medium mb-2">Add Weekday</label>
+    <div class="flex gap-2">
+        <input
+            id="weekdayName"
+            type="text"
+            placeholder="e.g. Monday"
+            class="border rounded px-3 py-2 w-full"
+        />
+        <button
+            onclick="addWeekday()"
+            class="bg-indigo-600 text-white px-4 rounded hover:bg-indigo-700">
+            Add
+        </button>
+    </div>
+</div>
+
+<!-- Weekday List -->
+<div class="bg-white rounded-lg p-4 w-96">
+    <h3 class="font-medium mb-3">Configured Weekdays</h3>
+    <ul id="weekdayList" class="space-y-2"></ul>
+</div>
+
+{% block page_js %}
+<script>
+async function loadWeekdays() {
+    const res = await fetch("https://erp.backend.smartbus360.com/weekdays/", {
+        headers: {
+            "Authorization": "Bearer " + window.ACCESS_TOKEN
+
+        }
+    });
+    const data = await res.json();
+
+    const list = document.getElementById("weekdayList");
+    list.innerHTML = "";
+
+    data.forEach(w => {
+        list.innerHTML += `
+            <li class="flex justify-between items-center border rounded px-3 py-2">
+                <span>${w.name}</span>
+                <span class="text-sm ${w.is_active ? 'text-green-600' : 'text-red-600'}">
+                    ${w.is_active ? 'Active' : 'Inactive'}
+                </span>
+            </li>
+        `;
+    });
+}
+
+async function addWeekday() {
+    const name = document.getElementById("weekdayName").value.trim();
+    if (!name) {
+        alert("Enter weekday name");
+        return;
+    }
+
+    await fetch("https://erp.backend.smartbus360.com/weekdays/", {
+        method: "POST",
+        headers: {
+            "Authorization":"Bearer " + window.ACCESS_TOKEN,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ name })
+    });
+
+    document.getElementById("weekdayName").value = "";
+    loadWeekdays();
+}
+
+// Initial load
+loadWeekdays();
+</script>
+{% endblock %}
+
+{% endblock %}

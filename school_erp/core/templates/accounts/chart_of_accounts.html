@@ -1,0 +1,101 @@
+{% extends "base/base.html" %}
+{% block content %}
+
+<div class="p-6">
+    <!-- Page Title -->
+    <h2 class="text-lg font-semibold mb-4">
+        Accounts | Chart of Accounts
+    </h2>
+
+    <div class="grid grid-cols-12 gap-6">
+
+        <!-- LEFT: ADD CHART FORM -->
+        <div class="col-span-4 bg-white rounded-xl p-6 shadow">
+            <h3 class="text-xl font-semibold mb-1">
+                Add chart of accounts
+            </h3>
+            <p class="text-sm mb-4">
+                <span class="text-blue-500 font-semibold">Required*</span>
+                <span class="text-gray-400 ml-2">Optional</span>
+            </p>
+
+            <!-- Head Name -->
+            <div class="mb-4">
+                <label class="text-sm">Head name*</label>
+                <input type="text"
+                       class="w-full mt-1 px-4 py-2 border rounded-full"
+                       placeholder="Name Of Head*">
+            </div>
+
+            <!-- Head Type -->
+            <div class="mb-6">
+                <label class="text-sm">Head type*</label>
+                <select class="w-full mt-1 px-4 py-2 border rounded-full">
+                    <option>Select*</option>
+                    <option>Income</option>
+                    <option>Expense</option>
+                </select>
+            </div>
+
+            <!-- Save Button -->
+            <button class="bg-yellow-400 hover:bg-yellow-500 
+                           text-black font-semibold
+                           px-6 py-2 rounded-full flex items-center gap-2">
+                💾 Save Head
+            </button>
+        </div>
+
+        <!-- RIGHT: TABLE -->
+        <div class="col-span-8 bg-white rounded-xl p-6 shadow">
+
+            <!-- Table Controls -->
+            <div class="flex justify-between items-center mb-4">
+                <div class="text-sm">
+                    Show
+                    <select class="border rounded px-2 py-1 mx-1">
+                        <option>10</option>
+                        <option>25</option>
+                        <option>50</option>
+                    </select>
+                    entries
+                </div>
+
+                <input type="text"
+                       placeholder="Search:"
+                       class="border px-3 py-1 rounded">
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="text-left p-2">NAME OF HEAD</th>
+                            <th class="text-left p-2">TYPE</th>
+                            <th class="text-left p-2">ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="3" class="text-center p-6 text-gray-500">
+                                No data available in table
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Info -->
+            <div class="flex justify-between items-center mt-4 text-sm">
+                <p>Showing 0 to 0 of 0 entries</p>
+                <div class="space-x-3 text-blue-500">
+                    <span>Previous</span>
+                    <span>Next</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

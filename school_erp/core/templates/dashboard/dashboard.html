@@ -1,0 +1,133 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<h1 class="text-xl font-semibold mb-6">Dashboard</h1>
+
+<!-- ================= TOP STATS ================= -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+
+    <!-- Students -->
+    <div class="bg-gradient-to-r from-indigo-500 to-indigo-400 text-white p-5 rounded-xl">
+        <p class="text-sm">Total Students</p>
+        <h2 id="cardTotalStudents" class="text-3xl font-bold">0</h2>
+        <p class="text-xs">This Month: <span id="cardStudentsMonth">0</span></p>
+    </div>
+
+    <!-- Employees -->
+    <div class="bg-gradient-to-r from-purple-500 to-purple-400 text-white p-5 rounded-xl">
+        <p class="text-sm">Total Employees</p>
+        <h2 id="cardTotalEmployees" class="text-3xl font-bold">0</h2>
+        <p class="text-xs">This Month: <span id="cardEmployeesMonth">0</span></p>
+    </div>
+
+</div>
+
+<!-- ================= MAIN GRID ================= -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+    <!-- LEFT -->
+    <div class="xl:col-span-2 space-y-6">
+
+        <!-- Verification Banner -->
+        <div id="verifyBanner"
+             class="bg-red-50 border border-red-100 rounded-xl p-5 flex justify-between items-center">
+            <div>
+                <h3 class="text-red-500 font-semibold">Welcome to Admin Dashboard</h3>
+                <p class="text-sm text-gray-600">
+                    Your account is not verified yet!
+                    <a href="/institute/profile" class="text-blue-500 font-medium">
+                        Verify now
+                    </a>
+                </p>
+            </div>
+            <img src="https://illustrations.popsy.co/gray/web-design.svg"
+                 class="h-20 hidden md:block">
+        </div>
+
+        <!-- Attendance Chart -->
+        <div class="bg-white p-5 rounded-xl">
+            <h3 class="text-sm font-semibold mb-3">Today Attendance</h3>
+            <canvas id="attendanceChart" height="140"></canvas>
+        </div>
+
+        <!-- Fees Chart -->
+        <div class="bg-white p-5 rounded-xl">
+            <h3 class="text-sm font-semibold mb-3">Fees (This Month)</h3>
+            <canvas id="feesChart" height="140"></canvas>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= DASHBOARD SCRIPT ================= -->
+<script>
+let attendanceChart = null;
+let feesChart = null;
+
+async function loadDashboard() {
+    const res = await fetch("https://erp.backend.smartbus360.com/dashboard1/summary", {
+        headers: {
+            Authorization: "Bearer " + window.ACCESS_TOKEN
+        }
+    });
+
+    if (!res.ok) {
+        console.error("Dashboard API failed");
+        return;
+    }
+
+    const data = await res.json();
+
+    // ====== COUNTS ======
+    cardTotalStudents.innerText = data.students.total;
+    cardStudentsMonth.innerText = data.students.this_month;
+
+    cardTotalEmployees.innerText = data.employees.total;
+    cardEmployeesMonth.innerText = data.employees.this_month;
+
+    // ====== VERIFY BANNER ======
+    if (data.institute.verified) {
+        verifyBanner.classList.add("hidden");
+    }
+
+    // ====== ATTENDANCE CHART ======
+    if (attendanceChart) attendanceChart.destroy();
+    attendanceChart = new Chart(attendanceChartCanvas, {
+        type: "doughnut",
+        data: {
+            labels: ["Students", "Employees"],
+            datasets: [{
+                data: [
+                    data.attendance.students_today_percent,
+                    data.attendance.employees_today_percent
+                ],
+                backgroundColor: ["#3b82f6", "#ef4444"]
+            }]
+        }
+    });
+
+    // ====== FEES CHART ======
+    if (feesChart) feesChart.destroy();
+    feesChart = new Chart(feesChartCanvas, {
+        type: "bar",
+        data: {
+            labels: ["Collected", "Pending"],
+            datasets: [{
+                data: [
+                    data.fees.month_collected,
+                    data.fees.month_pending
+                ],
+                backgroundColor: ["#22c55e", "#f97316"]
+            }]
+        }
+    });
+}
+
+const attendanceChartCanvas = document.getElementById("attendanceChart");
+const feesChartCanvas = document.getElementById("feesChart");
+
+document.addEventListener("DOMContentLoaded", loadDashboard);
+</script>
+
+{% endblock %}

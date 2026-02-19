@@ -1,0 +1,235 @@
+{% extends "base/layout.html" %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<div class="mb-6 flex items-center gap-2 text-sm text-gray-500">
+    <span class="font-medium text-gray-700">General Settings</span>
+    <span>/</span>
+    <span>Institute Profile</span>
+</div>
+
+<!-- Page Title -->
+<h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center">
+    Update Profile
+</h2>
+
+<!-- Main Card -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-white rounded-2xl p-6 shadow">
+
+    <!-- LEFT SECTION (FORM) -->
+    <div class="lg:col-span-2 space-y-5">
+
+        <!-- Logo Upload -->
+        <div class="border rounded-xl p-4 flex items-center gap-4">
+            <div class="w-28 h-28 rounded-full bg-gray-100 flex items-center justify-center text-sm text-gray-400">
+                LOGO
+            </div>
+
+            <button class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm">
+                Change Logo
+            </button>
+        </div>
+
+        <!-- Institute Name -->
+        <div>
+            <label class="text-sm font-medium text-gray-600">Name of Institute *</label>
+            <input id="inst_name" type="text"
+                   class="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none"
+                   placeholder="Institute Name">
+        </div>
+
+        <!-- Target Line -->
+        <div>
+            <label class="text-sm font-medium text-gray-600">Target Line</label>
+            <input id="inst_target" type="text"
+                   class="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none"
+                   placeholder="Institute Target Line">
+        </div>
+
+        <!-- Phone -->
+        <div>
+            <label class="text-sm font-medium text-gray-600">Phone Number *</label>
+            <input id="inst_phone" type="text"
+                   class="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none"
+                   placeholder="Phone No">
+        </div>
+
+        <!-- Website -->
+        <div>
+            <label class="text-sm font-medium text-gray-600">Website</label>
+            <input id="inst_website" type="text"
+                   class="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none"
+                   placeholder="Website URL">
+        </div>
+
+        <!-- Address -->
+        <div>
+            <label class="text-sm font-medium text-gray-600">Address *</label>
+            <textarea id="inst_address" rows="3"
+                      class="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none"
+                      placeholder="Institute Address"></textarea>
+        </div>
+
+        <!-- Country -->
+        <div>
+            <label class="text-sm font-medium text-gray-600">Country *</label>
+            <select id="inst_country" class="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none">
+                <option>Select Country</option>
+                <option>India</option>
+                <option>USA</option>
+                <option>UK</option>
+            </select>
+        </div>
+
+        <!-- Submit -->
+        <div class="pt-4 text-center">
+<button id="updateBtn"
+        type="button"
+        class="bg-yellow-500 hover:bg-yellow-600 text-white px-8 py-3 rounded-full font-medium">
+    🔄 Update Profile
+</button>
+        </div>
+
+    </div>
+
+    <!-- RIGHT PREVIEW CARD -->
+    <div class="border rounded-xl p-5 text-center bg-gray-50">
+
+        <button class="bg-green-500 text-white px-4 py-1 rounded-full text-xs mb-4">
+            Profile View
+        </button>
+
+        <div class="w-28 h-28 mx-auto rounded-full bg-gray-200 mb-4"></div>
+
+        <h3 id="preview_name" class="font-semibold text-lg">Your Institute Name</h3>
+        <p id="preview_target" class="text-sm text-gray-500 mb-4">Institute Target Line</p>
+
+        <div class="text-sm text-gray-600 space-y-2 text-left">
+            <p>📞<span id="preview_phone">Phone No</span> </p>
+            <!-- <p>✉️ Email</p> -->
+            <p>🌐<span id="preview_website">Website</span> </p>
+            <p>📍<span id="preview_address">Address</span> </p>
+            <p>🌍 <span id="preview_country">Country</span></p>
+        </div>
+
+    </div>
+
+    
+</div>
+
+<script>
+// ✅ GLOBAL AUTH HELPER
+async function getCurrentUser() {
+    const token = window.ACCESS_TOKEN;
+
+    if (!token) {
+console.info("No ACCESS_TOKEN (public page or not logged in)");
+        return null;
+    }
+
+    const res = await fetch("https://erp.backend.smartbus360.com/auth/me", {
+        headers: {
+            "Authorization": "Bearer " + window.ACCESS_TOKEN,
+        }
+    });
+
+    if (!res.ok) {
+        console.warn("Auth failed", res.status);
+        return null;
+    }
+
+    return await res.json();
+}
+
+// ✅ LOAD INSTITUTE DATA
+async function loadInstitute() {
+    const user = await getCurrentUser();
+    if (!user) return;
+
+    const res = await fetch(
+        `https://erp.backend.smartbus360.com/institutes/${user.institute_id}`,
+        {
+            headers: {
+                "Authorization": "Bearer " + window.ACCESS_TOKEN,
+            }
+        }
+    );
+
+    if (!res.ok) {
+        alert("Failed to load institute data");
+        return;
+    }
+
+    const institute = await res.json();
+
+    // Fill form
+    inst_name.value = institute.name || "";
+    inst_target.value = institute.target_line || "";
+    inst_phone.value = institute.phone || "";
+    inst_website.value = institute.website || "";
+    inst_address.value = institute.address || "";
+    inst_country.value = institute.country || "";
+
+    updatePreview(institute);
+
+    const sidebarName = document.getElementById("sidebar_institute_name");
+    if (sidebarName) sidebarName.innerText = institute.name;
+}
+
+// ✅ PREVIEW UPDATE
+function updatePreview(data) {
+    preview_name.innerText = data.name || "";
+    preview_target.innerText = data.target_line || "";
+    preview_phone.innerText = data.phone || "";
+    preview_website.innerText = data.website || "";
+    preview_address.innerText = data.address || "";
+    preview_country.innerText = data.country || "";
+}
+
+// ✅ UPDATE BUTTON
+document.getElementById("updateBtn").addEventListener("click", async () => {
+    const user = await getCurrentUser();
+    if (!user) return;
+
+    const payload = {
+        name: inst_name.value,
+        target_line: inst_target.value,
+        phone: inst_phone.value,
+        website: inst_website.value,
+        address: inst_address.value,
+        country: inst_country.value
+    };
+
+    const res = await fetch(
+        `https://erp.backend.smartbus360.com/institutes/${user.institute_id}`,
+        {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + window.ACCESS_TOKEN,
+            },
+            body: JSON.stringify(payload)
+        }
+    );
+
+    if (!res.ok) {
+        alert("Failed to update profile");
+        return;
+    }
+
+    const updated = await res.json();
+    updatePreview(updated);
+
+    const sidebarName = document.getElementById("sidebar_institute_name");
+    if (sidebarName) sidebarName.innerText = updated.name;
+
+    alert("Profile updated successfully");
+});
+
+// 🚀 AUTO LOAD
+document.addEventListener("DOMContentLoaded", loadInstitute);
+</script>
+
+
+{% endblock %}

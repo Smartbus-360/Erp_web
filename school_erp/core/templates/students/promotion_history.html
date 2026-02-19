@@ -1,0 +1,133 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="p-6">
+
+    <!-- Header -->
+    <div class="mb-6">
+        <h2 class="text-lg font-semibold">Students | Promotion History</h2>
+    </div>
+<!-- Filters -->
+<div class="bg-white rounded-xl shadow p-4 mb-4 flex gap-4 items-end">
+    <div>
+        <label class="text-xs text-gray-500">Student Name</label>
+        <input
+            id="search"
+            type="text"
+            placeholder="Search name"
+            class="border px-3 py-2 rounded w-48"
+        >
+    </div>
+
+    <div>
+        <label class="text-xs text-gray-500">From Class</label>
+        <input
+            id="fromClass"
+            type="text"
+            placeholder="e.g. 9"
+            class="border px-3 py-2 rounded w-32"
+        >
+    </div>
+
+    <div>
+        <label class="text-xs text-gray-500">To Class</label>
+        <input
+            id="toClass"
+            type="text"
+            placeholder="e.g. 10"
+            class="border px-3 py-2 rounded w-32"
+        >
+    </div>
+
+    <button
+        onclick="loadHistory()"
+        class="bg-indigo-600 text-white px-4 py-2 rounded"
+    >
+        Filter
+    </button>
+</div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-xl shadow p-6">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="px-3 py-2 text-left">Student</th>
+                    <th class="px-3 py-2 text-left">From Class</th>
+                    <th class="px-3 py-2 text-left">To Class</th>
+                    <th class="px-3 py-2 text-left">Section</th>
+                    <th class="px-3 py-2 text-left">Date</th>
+                </tr>
+            </thead>
+
+            <tbody id="promotionHistory">
+                <!-- Dynamic rows -->
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block page_js %}
+
+<script>
+async function loadHistory() {
+
+    
+
+    const search = document.getElementById("search").value;
+    const fromClass = document.getElementById("fromClass").value;
+    const toClass = document.getElementById("toClass").value;
+
+    let url = "https://erp.backend.smartbus360.com/promotion/history?";
+    if (search) url += `search=${search}&`;
+    if (fromClass) url += `from_class=${fromClass}&`;
+    if (toClass) url += `to_class=${toClass}&`;
+
+    const res = await fetch(url, {
+        headers: {
+            "Authorization": "Bearer " + window.ACCESS_TOKEN,
+        }
+    });
+
+    if (!res.ok) {
+        alert("Failed to load promotion history");
+        return;
+    }
+
+    const history = await res.json();
+    const table = document.getElementById("promotionHistory");
+    table.innerHTML = "";
+
+    if (history.length === 0) {
+        table.innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center py-4 text-gray-500">
+                    No promotion records found
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    history.forEach(log => {
+        table.innerHTML += `
+            <tr class="border-t">
+                <td class="px-3 py-2">${log.student}</td>
+                <td class="px-3 py-2">${log.from_class}-${log.from_section}</td>
+                <td class="px-3 py-2">${log.to_class}-${log.to_section}</td>
+                <td class="px-3 py-2 text-gray-500">
+                    ${log.date}
+                </td>
+            </tr>
+        `;
+    });
+}
+
+// Load initially
+loadHistory();
+</script>
+
+{% endblock %}

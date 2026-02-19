@@ -1,0 +1,75 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="p-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-lg font-semibold">Students | All Students</h2>
+
+        <div class="flex gap-2">
+            <button class="px-3 py-2 bg-gray-100 rounded">🔄</button>
+            <button class="px-3 py-2 bg-gray-100 rounded">🔍 Search</button>
+            <button class="px-3 py-2 bg-gray-100 rounded">🖨 Print</button>
+            <button class="px-3 py-2 bg-gray-100 rounded">🎨 Customize</button>
+        </div>
+    </div>
+
+    <!-- Styles -->
+    <div class="flex gap-3 mb-6">
+        <button class="px-4 py-2 bg-blue-600 text-white rounded">Default</button>
+        <button class="px-4 py-2 bg-gray-100 rounded">Style 1</button>
+        <button class="px-4 py-2 bg-gray-100 rounded">Style 2</button>
+        <button class="px-4 py-2 bg-gray-100 rounded">Style 3</button>
+        <button class="px-4 py-2 bg-gray-100 rounded">Style 4</button>
+    </div>
+
+    <!-- Card Area -->
+    <div class="flex">
+
+        <!-- ID CARD -->
+        <div class="w-[260px] h-[420px] border rounded-xl shadow bg-white overflow-hidden">
+
+            <!-- Background -->
+            <div class="h-full w-full bg-gray-50 relative p-4">
+
+                <!-- Photo -->
+                <div class="flex justify-center mt-4">
+                    <div class="w-20 h-20 rounded-full bg-gray-300 flex items-center justify-center">
+                        <span class="text-xs text-gray-600">Photo</span>
+                    </div>
+                </div>
+
+                <!-- Barcode -->
+                <div class="mt-4 flex justify-center">
+                    <img src="{% static 'images/barcode.png' %}" alt="barcode" class="h-10">
+                </div>
+
+                <!-- Name -->
+                <p class="text-center font-semibold mt-2">AMAN</p>
+
+                <!-- Role -->
+                <div class="flex items-center gap-1 text-sm mt-3">
+                    🎓 <span class="font-semibold">STUDENT</span>
+                </div>
+
+                <!-- Details -->
+                <div class="text-sm mt-2">
+                    <p><strong>ID :</strong> 23456</p>
+                    <p><strong>Class :</strong> 12</p>
+                    <p><strong>DOA :</strong> 16 Dec 2025</p>
+                </div>
+
+                <!-- QR -->
+                <div class="absolute bottom-4 right-4">
+                    <img src="{% static 'images/qrcode.png' %}" alt="qr" class="h-16 w-16">
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base/auth_base.html" %}
+{% block content %}
+
+<div class="max-w-md mx-auto mt-20 bg-white p-6 rounded shadow">
+    <h2 class="text-xl font-semibold mb-4">Login</h2>
+
+    <p id="errorBox" class="text-red-500 mb-3 hidden"></p>
+
+    <form method="post" action="{% url 'core:login' %}">
+    {% csrf_token %}
+
+    <input name="email" type="email" placeholder="Email"
+           class="w-full mb-3 p-2 border" required>
+
+    <input name="password" type="password" placeholder="Password"
+           class="w-full mb-3 p-2 border" required>
+
+    <button
+        type="submit"
+        class="w-full bg-blue-600 text-white py-2 rounded">
+        Login
+    </button>
+</form>
+
+</div>
+
+
+
+{% endblock %}

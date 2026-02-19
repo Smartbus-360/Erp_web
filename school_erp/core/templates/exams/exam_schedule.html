@@ -1,0 +1,95 @@
+{% extends "base/layout.html" %}
+{% load static %}
+{% block content %}
+
+<div class="content-wrapper max-w-4xl">
+
+<h2 class="text-xl font-semibold mb-4">
+  Exam Schedule – {{ exam.name }}
+</h2>
+
+<div class="mb-4 text-gray-600">
+  Class: <strong>{{ exam.class_name }}</strong>
+</div>
+
+<form method="get" class="mb-6">
+  <label class="form-label">Section</label>
+  <select name="section_id" class="form-control w-48" onchange="this.form.submit()">
+    <option value="">Select Section</option>
+    {% for s in sections %}
+      <option value="{{ s.id }}" {% if section_id == s.id|stringformat:"s" %}selected{% endif %}>
+        {{ s.name }}
+      </option>
+    {% endfor %}
+  </select>
+</form>
+
+{% if section_id %}
+<form id="scheduleForm">
+
+<input type="hidden" name="section_id" value="{{ section_id }}">
+
+<table class="table w-full">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Subject</th>
+      <th>Teacher</th>
+    </tr>
+  </thead>
+<tbody>
+{% for s in subjects %}
+<tr data-subject="{{ s.id }}">
+  <td>
+    <input type="date"
+           class="form-control exam-date"
+           value="{% for sc in schedule %}
+                    {% if sc.subject_id == s.id %}
+                      {{ sc.exam_date }}
+                    {% endif %}
+                  {% endfor %}">
+  </td>
+
+  <td>{{ s.name }}</td>
+
+  <td>
+    <select class="form-control teacher-select">
+      <option value="">Select Teacher</option>
+      {% for t in teachers %}
+      <option value="{{ t.id }}"
+        {% for sc in schedule %}
+          {% if sc.subject_id == s.id and sc.teacher_id == t.id %}
+            selected
+          {% endif %}
+        {% endfor %}
+      >
+        {{ t.name }}
+      </option>
+      {% endfor %}
+    </select>
+  </td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+<div class="mt-6 flex gap-3">
+<button type="button"
+        class="btn btn-primary"
+        onclick="saveSchedule({{ exam.id }}, {{ exam.class_id }}, {{ section_id }})">
+  Save Schedule
+</button>
+
+  <a href="{% url 'core:exam_datesheet' exam.id section_id %}"
+     target="_blank"
+     class="btn btn-outline">
+     Print Date Sheet
+  </a>
+</div>
+
+</form>
+
+{% endif %}
+</div>
+
+{% endblock %}

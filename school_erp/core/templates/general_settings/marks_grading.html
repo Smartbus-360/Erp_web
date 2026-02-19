@@ -1,0 +1,64 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<div class="mb-6 text-sm text-gray-500">
+    Settings / <span class="font-medium text-gray-800">Marks Grading</span>
+</div>
+
+<div x-data="{ tab: 'grading' }" class="bg-white p-8 rounded-xl border">
+
+    <!-- Tabs -->
+    <div class="flex gap-4 mb-8">
+        <button @click="tab='grading'"
+                :class="tab==='grading' ? 'bg-indigo-500 text-white' : 'bg-gray-100'"
+                class="px-4 py-2 rounded-lg">
+            Marks Grading
+        </button>
+
+        <button @click="tab='fail'"
+                :class="tab==='fail' ? 'bg-indigo-500 text-white' : 'bg-gray-100'"
+                class="px-4 py-2 rounded-lg">
+            Fail Criteria
+        </button>
+    </div>
+
+    <!-- Marks Grading TAB -->
+    <div x-show="tab==='grading'" class="space-y-4">
+
+        {% for g in grades %}
+        <div class="grid grid-cols-4 gap-4">
+
+            <input class="border rounded px-3 py-2" value="{{ g }}">
+
+            <input class="border rounded px-3 py-2" placeholder="% From">
+
+            <input class="border rounded px-3 py-2" placeholder="% Upto">
+
+            <select class="border rounded px-3 py-2">
+                <option>PASS</option>
+                <option>FAIL</option>
+            </select>
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+    <!-- Fail Criteria TAB -->
+    <div x-show="tab==='fail'" class="space-y-6">
+
+        <input class="border rounded px-3 py-2 w-full" placeholder="Overall %" />
+
+        <input class="border rounded px-3 py-2 w-full" placeholder="Subject %" />
+
+        <input class="border rounded px-3 py-2 w-full" placeholder="No. of Subjects" />
+
+        <button class="bg-yellow-400 px-6 py-3 rounded-full">
+            Update
+        </button>
+
+    </div>
+
+</div>
+
+{% endblock %}

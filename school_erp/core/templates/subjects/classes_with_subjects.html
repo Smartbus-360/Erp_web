@@ -1,0 +1,322 @@
+{% extends "base/layout.html" %}
+{% block content %}
+
+<!-- Breadcrumb -->
+<div class="mb-6 flex items-center gap-2 text-sm text-gray-500">
+    <span class="font-medium text-gray-700">Subjects</span>
+    <span>/</span>
+    <span class="text-gray-800 font-semibold">Classes With Subjects</span>
+</div>
+
+<!-- Cards Wrapper -->
+<div class="flex flex-wrap gap-8">
+
+    <!-- Class Card -->
+<div id="classesWithSubjects" class="flex flex-wrap gap-8"></div>
+
+    </div>
+
+    <!-- Assign Subjects Card -->
+    <a href="{% url 'core:assign_subjects' %}"
+       class="w-64 h-56 border-2 border-dashed border-indigo-500 rounded-xl
+              flex flex-col items-center justify-center text-indigo-600
+              hover:bg-indigo-50 transition">
+
+        <i class="ri-add-line text-3xl mb-2"></i>
+        <span class="font-semibold text-center">
+            Assign<br>Subjects
+        </span>
+
+    </a>
+
+    <!-- ACTION ICONS -->
+<!-- <div class="absolute top-4 right-4 flex gap-3">
+
+    <!-- ✏️ Edit Subjects -->
+    <!-- <a href="/subjects/assign/?class_id=${cls.class_id}"
+       class="text-indigo-500 hover:text-indigo-700"
+       title="Edit Subjects">
+        <i class="ri-pencil-line"></i>
+    </a>
+
+    <!-- 📘 View Syllabus -->
+    <!-- <a href="/syllabus/view/?class_id=${cls.class_id}"
+       class="text-green-600 hover:text-green-800"
+       title="View Syllabus">
+        <i class="ri-book-open-line"></i>
+    </a> --> 
+
+<!-- </div> --> 
+
+
+</div>
+
+{% block page_js %}
+<script>
+(async () => {
+  const res = await fetch("https://erp.backend.smartbus360.com/subjects/summary", {
+    headers: {
+      "Authorization": "Bearer " + window.ACCESS_TOKEN
+
+    }
+  });
+
+  const data = await res.json();
+  const container = document.getElementById("classesWithSubjects");
+  container.innerHTML = "";
+
+//   data.forEach(cls => {
+//     container.innerHTML += `
+//       <div class="bg-white w-64 rounded-xl border p-6">
+//         <div class="text-2xl font-bold mb-2">${cls.class_name}</div>
+
+//         <div class="flex items-center gap-3 mb-3">
+//           <i class="ri-folder-3-fill text-indigo-500 text-xl"></i>
+//           <div>
+//             <div class="text-sm text-gray-500">TOTAL SUBJECTS</div>
+//             <div class="font-semibold">${cls.total_subjects}</div>
+//           </div>
+//         </div>
+
+//         <div class="text-sm text-gray-500">
+//           TOTAL EXAM MARKS
+//           <div class="font-semibold">${cls.total_subjects * 100}</div>
+//         </div>
+//       </div>
+//     `;
+//   });
+// data.forEach(cls => {
+//   container.innerHTML += `
+//     <div class="bg-white w-64 rounded-xl border p-6 relative">
+
+//       <!-- ACTION ICONS -->
+//       <div class="absolute top-4 right-4 flex gap-3">
+
+//         <!-- ✏️ Edit Subjects -->
+//         <a href="/subjects/assign/?class_id=${cls.class_id}"
+//            class="text-indigo-500 hover:text-indigo-700"
+//            title="Edit Subjects">
+//           <i class="ri-pencil-line"></i>
+//         </a>
+
+//         <!-- 📘 View Syllabus -->
+//         <a href="/syllabus/view/?class_id=${cls.class_id}"
+//            class="text-green-600 hover:text-green-800"
+//            title="View Syllabus">
+//           <i class="ri-book-open-line"></i>
+//         </a>
+
+//       </div>
+
+//       <div class="text-2xl font-bold mb-2">${cls.class_name}</div>
+
+//       <div class="flex items-center gap-3 mb-3">
+//         <i class="ri-folder-3-fill text-indigo-500 text-xl"></i>
+//         <div>
+//           <div class="text-sm text-gray-500">TOTAL SUBJECTS</div>
+//           <div class="font-semibold">${cls.total_subjects}</div>
+//         </div>
+//       </div>
+
+//       <div class="text-sm text-gray-500">
+//         TOTAL EXAM MARKS
+//         <div class="font-semibold">${cls.total_subjects * 100}</div>
+//       </div>
+
+//     </div>
+//   `;
+// });
+
+data.forEach(cls => {
+  const maxSubjects = 10; // for visual scaling
+  const loadPercent = Math.min(
+    Math.round((cls.total_subjects / maxSubjects) * 100),
+    100
+  );
+
+  container.innerHTML += `
+  <div class="relative w-64 rounded-2xl border bg-white p-6
+              hover:shadow-xl transition-all duration-300
+              hover:-translate-y-1 group">
+
+    <!-- AI Gradient Strip -->
+    <div class="absolute inset-x-0 top-0 h-1 rounded-t-2xl
+                bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+
+    <!-- ACTION ICONS -->
+    <div class="absolute top-4 right-4 flex gap-3 opacity-60 group-hover:opacity-100 transition">
+
+      <a href="/subjects/assign/?class_id=${cls.class_id}"
+         class="text-indigo-500 hover:text-indigo-700"
+         title="Edit Subjects">
+        <i class="ri-pencil-line"></i>
+      </a>
+
+      <a href="/syllabus/view/?class_id=${cls.class_id}"
+         class="text-emerald-600 hover:text-emerald-800"
+         title="View Syllabus">
+        <i class="ri-book-open-line"></i>
+      </a>
+
+    </div>
+
+    <!-- Class Name -->
+    <div class="flex items-center gap-2 mb-4">
+      <div class="w-10 h-10 rounded-full bg-indigo-100
+                  flex items-center justify-center">
+        🤖
+      </div>
+      <div>
+        <div class="text-lg font-bold leading-tight">
+          ${cls.class_name}
+        </div>
+        <div class="text-xs text-gray-500">
+          AI Curriculum Overview
+        </div>
+      </div>
+    </div>
+
+    <!-- Subject Count -->
+    <div class="flex items-center gap-3 mb-4">
+      <i class="ri-stack-line text-indigo-500 text-xl"></i>
+      <div>
+        <div class="text-xs text-gray-500 uppercase">
+          Total Subjects
+        </div>
+        <button
+  onclick="openSubjects(${cls.class_id})"
+  class="text-xl font-semibold text-indigo-600 hover:underline">
+  ${cls.total_subjects}
+</button>
+
+      </div>
+    </div>
+
+    <!-- AI Load Bar -->
+    <div class="mb-4">
+      <div class="flex justify-between text-xs text-gray-500 mb-1">
+        <span>Academic Load</span>
+        <span>${loadPercent}%</span>
+      </div>
+
+      <div class="w-full h-2 rounded-full bg-gray-200 overflow-hidden">
+        <div class="h-full rounded-full
+                    bg-gradient-to-r from-indigo-500 to-purple-500
+                    transition-all duration-500"
+             style="width:${loadPercent}%">
+        </div>
+      </div>
+    </div>
+
+    <!-- Exam Intelligence -->
+    <div class="text-sm text-gray-500">
+      Estimated Exam Marks
+      <div class="font-semibold text-gray-800">
+        ${cls.total_subjects * 100}
+      </div>
+    </div>
+
+  </div>
+  `;
+});
+
+})();
+</script>
+<script>
+async function openSubjects(classId) {
+  const res = await fetch(
+    `https://erp.backend.smartbus360.com/subjects/details/${classId}`,
+    {
+      headers: {
+        Authorization: "Bearer " + window.ACCESS_TOKEN
+      }
+    }
+  );
+
+  const data = await res.json();
+
+  let html = `
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+<div class="bg-white rounded-2xl w-[460px] p-6
+            shadow-2xl border relative overflow-hidden">
+
+  <!-- Gradient Top -->
+  <div class="absolute top-0 inset-x-0 h-1
+              bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+  </div>
+<h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+  📚 Subject Overview
+  <span class="text-xs px-2 py-1 rounded-full
+               bg-indigo-100 text-indigo-600">
+    AI Powered
+  </span>
+</h3>
+
+        <div class="space-y-2">
+  `;
+
+  data.forEach((s, index) => {
+  html += `
+    <div class="flex items-center justify-between
+                p-3 rounded-lg bg-gray-50
+                hover:bg-indigo-50 transition">
+
+      <!-- Left -->
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full
+                    bg-indigo-100 text-indigo-600
+                    flex items-center justify-center text-sm font-semibold">
+          ${index + 1}
+        </div>
+
+        <div>
+          <div class="font-medium text-gray-800">
+            ${s.subject_name}
+          </div>
+          <div class="text-xs text-gray-500">
+  👨‍🏫 
+  ${
+    s.teacher_id
+    ? `<a href="/employees/profile/?id=${s.teacher_id}"
+         class="text-indigo-600 hover:underline font-medium">
+         ${s.teacher_name}
+       </a>`
+    : "Not Assigned"
+  }
+</div>
+
+        </div>
+      </div>
+
+      <!-- Marks -->
+      <div class="text-right">
+        <div class="text-xs text-gray-400">Marks</div>
+        <div class="font-semibold text-indigo-600">
+          ${s.marks ?? 100}
+        </div>
+      </div>
+
+    </div>
+  `;
+});
+
+
+  html += `
+        </div>
+        <button onclick="this.closest('.fixed').remove()"
+          class="mt-4 w-full bg-indigo-500 text-white py-2 rounded">
+          Close
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML("beforeend", html);
+}
+</script>
+
+{% endblock %}
+
+
+
+{% endblock %}

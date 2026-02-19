@@ -1,0 +1,55 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="content-wrapper">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-bar">
+        <span class="text-muted">Salary</span>
+        <span class="mx-2">|</span>
+        <span class="fw-semibold">Salary Paid Receipt</span>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex justify-end gap-3 mb-4">
+        <button class="btn-outline">
+            <i class="bi bi-printer"></i> Print Detailed Receipt
+        </button>
+        <button class="btn-outline disabled">
+            <i class="bi bi-lock"></i> Thermal Receipt
+        </button>
+    </div>
+
+    <!-- Receipt Card -->
+    <div class="card max-w-3xl mx-auto p-10">
+
+        <!-- Profile -->
+        
+
+        <!-- Salary Details -->
+        <div class="grid grid-cols-2 gap-x-10 gap-y-3 text-sm">
+
+<h2>Salary Paid Slip</h2>
+
+<p><strong>Employee:</strong> {{ slip.employee }}</p>
+<p><strong>Designation:</strong> {{ slip.designation }}</p>
+<p><strong>Month:</strong> {{ slip.month }}</p>
+<p><strong>Paid On:</strong> {{ slip.paid_on }}</p>
+
+<hr>
+
+<p><strong>Salary:</strong> ₹{{ slip.amount }}</p>
+<p><strong>Bonus:</strong> ₹{{ slip.bonus }}</p>
+<p><strong>Deduction:</strong> ₹{{ slip.deduction }}</p>
+
+<h3>Net Amount: ₹{{ slip.net_amount }}</h3>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
